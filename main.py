@@ -1,16 +1,30 @@
-# This is a sample Python script.
+from pandas import DataFrame, to_numeric
+from utils.logger import Logger
+from services.exchange_api import ExchangeAPI
+from services.ema_caculator import EmaCaculator
+from db.database import Database
+from config.settings import Settings
+import json
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+class MarketDataAnalyser:
+    def __init__(self, base):
+        with open('./tokens.json', 'r') as f:
+            self.token_list = json.load(f)
+        self.base = base
+        self.logger = Logger.get_logger()
+        self.exchange_api = ExchangeAPI()
+        self.ema_caculator = EmaCaculator(exchangeAPI=self.exchange_api)
+        self.database = Database(Settings.CONNECTION_PARAMS)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+    def init_database(self):
+        for token in self.token_list:
+            prices = self.exchange_api.get_history_price(symbol=token)
+            prices = self.ema_caculator.calculate_all_ema(prices)
+            prices.drop(['open', 'vbtc'], axis=1, inplace=True)
+
+            self.database.store_data(prices, table_name=token)
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+
