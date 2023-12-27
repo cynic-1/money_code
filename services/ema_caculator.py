@@ -4,7 +4,7 @@ from pandas import DataFrame
 class EmaCaculator:
     def __init__(self, exchangeAPI):
         self.exchangeAPI = exchangeAPI
-        # 需要保存btc的历史数据，来计算相对价格
+        # 需要获取btc的历史数据，来计算相对价格
         self.btc = self.exchangeAPI.get_history_price('BTC')
 
     def calculate_all_ema(self, prices: DataFrame) -> DataFrame:

@@ -1,8 +1,12 @@
+from typing import Optional
+
 import requests
 from config.settings import Settings
 from pandas import DataFrame
 from utils.timestamp import get_current_hour_timestamp
 import time
+from utils.logger import Logger
+from requests.exceptions import HTTPError
 
 
 class ExchangeAPI:
@@ -20,11 +24,12 @@ class ExchangeAPI:
             'endTime': end,
             'limit': limit
         }
+        Logger.get_logger().info(f'Requesting {symbol}{base} from {start} to {end}')
         response = requests.get(self.base_url, params=params)
         response.raise_for_status()
         return response.json()
 
-    def get_history_price(self, symbol: str) -> DataFrame:
+    def get_history_price(self, symbol: str) -> Optional[DataFrame]:
         candle_sticks = []
         end = get_current_hour_timestamp()
 
@@ -39,10 +44,16 @@ class ExchangeAPI:
                 if n_entries < 500:
                     break
                 time.sleep(0.2)
+            except HTTPError as http_err:
+                print(f"An error occurred: {http_err}")
+                return None
             except Exception as e:
+                print(f"An error occurred: {e}")
                 time.sleep(0.5)
         df = DataFrame(candle_sticks)
         df.columns = ['open_time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'turnover']
         df.drop(['high', 'low', 'close', 'volume', 'close_time', 'turnover'], axis=1, inplace=True)
         df.set_index('open_time', inplace=True)
+        df.sort_index(inplace=True)
+        df['open'] = df['open'].astype('float64')
         return df
