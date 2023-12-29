@@ -9,7 +9,7 @@ import json
 
 class MarketDataAnalyser:
     def __init__(self, base=Settings.DEFAULT_BASE):
-        with open('./tokens1.json', 'r') as f:
+        with open(Settings.TOKEN_LIST, 'r') as f:
             self.token_list = json.load(f)
         self.base = base
         self.logger = Logger.get_logger()

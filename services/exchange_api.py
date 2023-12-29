@@ -24,24 +24,23 @@ class ExchangeAPI:
             'endTime': end,
             'limit': limit
         }
-        Logger.get_logger().info(f'Requesting {symbol}{base} from {start} to {end}')
+        Logger.get_logger().debug(f'Requesting {symbol}{base} from {start} to {end}')
         response = requests.get(self.base_url, params=params)
         response.raise_for_status()
         return response.json()
 
-    def get_history_price(self, symbol: str) -> Optional[DataFrame]:
+    def get_history_price(self, symbol: str, limit: int = Settings.API_LIMIT) -> Optional[DataFrame]:
         candle_sticks = []
         end = get_current_hour_timestamp()
 
         while True:
-            start = end - Settings.API_LIMIT * 8 * 3600 * 1000
+            start = end - limit * 8 * 3600 * 1000
             try:
                 tmp = self.get_candle_sticks(symbol, start=start, end=end)
                 n_entries = len(tmp)
-                print(n_entries)
                 candle_sticks += tmp
                 end = start
-                if n_entries < 500:
+                if n_entries < limit:
                     break
                 time.sleep(0.2)
             except HTTPError as http_err:
