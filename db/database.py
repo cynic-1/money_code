@@ -66,3 +66,20 @@ class Database:
                 except psycopg2.DatabaseError as e:
                     print(f"An error occurred: {e}")
 
+    def get_latest_data(self, token_name):
+        conn = self._connect()
+        cursor = conn.cursor()
+
+        # 执行查询：假设你的表名是your_table，且有一个自增的ID列
+        query = f'SELECT * FROM "{token_name}" ORDER BY open_time DESC LIMIT 1;'
+
+        try:
+            cursor.execute(query)
+            latest_record = cursor.fetchone()
+            return latest_record
+        except psycopg2.Error as e:
+            print("Unable to retrieve the latest record from the database.")
+            print(e)
+        finally:
+            cursor.close()
+            conn.close()

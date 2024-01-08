@@ -53,9 +53,9 @@ class ExchangeAPI:
 
         return list2df_kline(candle_sticks)
 
-    def update_history_price(self, symbol: str, last_time, limit: int = Settings.API_LIMIT):
+    def update_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT):
         candle_sticks = []
-        end = get_current_hour_timestamp()
+        end = end_time
 
         while True:
             start = end - limit * 8 * 3600 * 1000
@@ -75,4 +75,7 @@ class ExchangeAPI:
                 print(f"An error occurred: {e}")
                 time.sleep(0.5)
 
-        return list2df_kline(candle_sticks)
+        if len(candle_sticks) == 0:
+            return None
+        else:
+            return list2df_kline(candle_sticks)
