@@ -4,6 +4,7 @@ import requests
 from config.settings import Settings
 from pandas import DataFrame
 from utils.timestamp import get_current_hour_timestamp
+from utils.transform import list2df_kline
 import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
@@ -29,7 +30,7 @@ class ExchangeAPI:
         response.raise_for_status()
         return response.json()
 
-    def get_history_price(self, symbol: str, limit: int = Settings.API_LIMIT) -> Optional[DataFrame]:
+    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT) -> Optional[DataFrame]:
         candle_sticks = []
         end = get_current_hour_timestamp()
 
@@ -49,10 +50,29 @@ class ExchangeAPI:
             except Exception as e:
                 print(f"An error occurred: {e}")
                 time.sleep(0.5)
-        df = DataFrame(candle_sticks)
-        df.columns = ['open_time', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'turnover']
-        df.drop(['high', 'low', 'close', 'volume', 'close_time', 'turnover'], axis=1, inplace=True)
-        df.set_index('open_time', inplace=True)
-        df.sort_index(inplace=True)
-        df['open'] = df['open'].astype('float64')
-        return df
+
+        return list2df_kline(candle_sticks)
+
+    def update_history_price(self, symbol: str, last_time, limit: int = Settings.API_LIMIT):
+        candle_sticks = []
+        end = get_current_hour_timestamp()
+
+        while True:
+            start = end - limit * 8 * 3600 * 1000
+            if start < last_time:
+                start = last_time
+            if end <= start:
+                break
+            try:
+                tmp = self.get_candle_sticks(symbol, start=start, end=end)
+                candle_sticks += tmp
+                end = start
+                time.sleep(0.2)
+            except HTTPError as http_err:
+                print(f"An error occurred: {http_err}")
+                return None
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                time.sleep(0.5)
+
+        return list2df_kline(candle_sticks)

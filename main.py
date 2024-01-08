@@ -19,7 +19,7 @@ class MarketDataAnalyser:
 
     def init_database(self):
         for token in self.token_list:
-            prices = self.exchange_api.get_history_price(symbol=token)
+            prices = self.exchange_api.init_history_price(symbol=token)
             if prices is None:
                 self.logger.error(f'Skip {token}')
                 continue
