@@ -1,7 +1,7 @@
 import psycopg2
 import configparser
 from io import StringIO
-import pandas as pd
+from utils.logger import Logger
 
 
 class Database:
@@ -37,7 +37,7 @@ class Database:
                     cur.execute(create_table_query)
                     conn.commit()
                 except psycopg2.DatabaseError as e:
-                    print(f"An error occurred: {e}")
+                    Logger.get_logger().error(f"An error occurred: {e}")
 
             with conn.cursor() as cur:
                 # 准备一个内存文件对象
@@ -64,7 +64,7 @@ class Database:
                 try:
                     cur.copy_expert(sql=copy_sql, file=output)
                 except psycopg2.DatabaseError as e:
-                    print(f"An error occurred: {e}")
+                    Logger.get_logger().error(f"An error occurred: {e}")
 
     def get_latest_data(self, token_name):
         conn = self._connect()
@@ -78,8 +78,27 @@ class Database:
             latest_record = cursor.fetchone()
             return latest_record
         except psycopg2.Error as e:
-            print("Unable to retrieve the latest record from the database.")
-            print(e)
+            Logger.get_logger().error("Unable to retrieve the latest record from the database.")
+            Logger.get_logger().error(e)
+            return None
+        finally:
+            cursor.close()
+            conn.close()
+
+    def delete_data(self, token_name, start, end):
+        conn = self._connect()
+        cursor = conn.cursor()
+
+        query = f'DELETE FROM "{token_name}" WHERE open_time BETWEEN {start} AND {end};'
+
+        try:
+            cursor.execute(query)
+            # 提交事务
+            conn.commit()
+            Logger.get_logger().error(f"Deleted {cursor.rowcount} rows successfully from table {token_name}.")
+        except psycopg2.Error as e:
+            Logger.get_logger().error("Unable to delete the record.")
+            Logger.get_logger().error(e)
         finally:
             cursor.close()
             conn.close()

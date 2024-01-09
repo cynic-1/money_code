@@ -31,24 +31,35 @@ class MarketDataAnalyser:
             self.logger.info(f"Finish {token} initialization.")
 
     def update_database(self):
-        time, *_ = self.database.get_latest_data('ETH')
         cur = get_current_hour_timestamp()
         for token in self.token_list:
-            prices = self.exchange_api.update_history_price(symbol=token, last_time=time, end_time=cur)
+            last_ema = self.database.get_latest_data(token)
+            if last_ema is None:
+                continue
+            self.logger.debug(f'Table {token} last record open_time: {last_ema[0]}')
+            # 加一个小的偏移量是为了避免获得重复数据。
+            time = last_ema[0] + 10000
+
+            prices = self.exchange_api.get_history_price(symbol=token, last_time=time, end_time=cur)
             if prices is None:
                 self.logger.error(f'Skip {token}')
                 continue
-            prices = self.ema_caculator.calculate_all_ema(prices)
+            prices = self.ema_caculator.update_ema(prices, ema=last_ema)
             prices.drop(['open', 'vbtc'], axis=1, inplace=True)
 
             self.database.store_data(prices, table_name=token)
 
             self.logger.info(f"Finish {token} Update.")
 
+    def
+
 
 def main():
     mda = MarketDataAnalyser()
     # mda.init_database()
+    mda.update_database()
+
 
 if __name__ == '__main__':
     main()
+

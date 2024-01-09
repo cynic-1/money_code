@@ -53,7 +53,10 @@ class ExchangeAPI:
 
         return list2df_kline(candle_sticks)
 
-    def update_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT):
+    def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT):
+        if end_time - last_time < 8 * 3600 * 1000:
+            return None
+
         candle_sticks = []
         end = end_time
 
