@@ -50,9 +50,7 @@ class MarketDataAnalyser:
             self.database.store_data(prices, table_name=token)
 
             self.logger.info(f"Finish {token} Update.")
-
-    def
-
+        
 
 def main():
     mda = MarketDataAnalyser()
