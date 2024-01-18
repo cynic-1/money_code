@@ -9,13 +9,14 @@ from utils.timestamp import get_current_hour_timestamp
 
 class MarketDataAnalyser:
     def __init__(self, base=Settings.DEFAULT_BASE):
-        with open(Settings.TOKEN_LIST, 'r') as f:
-            self.token_list = json.load(f)
+        # with open(Settings.TOKEN_LIST, 'r') as f:
+        #     self.token_list = json.load(f)
         self.base = base
         self.logger = Logger.get_logger()
         self.exchange_api = ExchangeAPI()
         self.ema_caculator = EmaCaculator(exchangeAPI=self.exchange_api)
         self.database = Database()
+        self.token_list = self.exchange_api.get_token_list()
 
     def init_database(self):
         for token in self.token_list:
