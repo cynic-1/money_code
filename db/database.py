@@ -2,6 +2,7 @@ import psycopg2
 import configparser
 from io import StringIO
 from utils.logger import Logger
+from config.settings import Settings
 
 
 class Database:
@@ -15,30 +16,49 @@ class Database:
             'host': config['database']['host'],
             'port': config['database']['port']
         }
+        self.create_table()
 
     def _connect(self):
         return psycopg2.connect(**self.connection_params)
 
-    def store_data(self, data, table_name):
+    def create_table(self):
+        create_table_query = f'''
+            CREATE TABLE prices_8h
+    (
+        symbol                TEXT                            NOT NULL,
+        exchange              TEXT                            NOT NULL,
+        timestamp             BIGINT                          NOT NULL, 
+        open                  NUMERIC                         NOT NULL,
+        high                  NUMERIC                         NOT NULL,
+        low                   NUMERIC                         NOT NULL,
+        close                 NUMERIC                         NOT NULL,
+        vbtc                  NUMERIC                         NOT NULL,    
+        usd_ema_12            NUMERIC,
+        usd_ema_144           NUMERIC,
+        usd_ema_169           NUMERIC,
+        usd_ema_576           NUMERIC,
+        usd_ema_676           NUMERIC,
+        btc_ema_12            NUMERIC,
+        btc_ema_144           NUMERIC,
+        btc_ema_169           NUMERIC,
+        btc_ema_576           NUMERIC,
+        btc_ema_676           NUMERIC
+    );
+        CREATE INDEX symbol_time ON prices_8h (timestamp, symbol);
+        '''
+
         with self._connect() as conn:
             with conn.cursor() as cur:
-                # 创建表的 SQL 语句，这里需要根据 DataFrame 的结构来定义
-                create_table_query = f'''
-                CREATE TABLE IF NOT EXISTS "{table_name}" (
-                    open_time BIGINT PRIMARY KEY,
-                    ema12 NUMERIC,
-                    ema144 NUMERIC,
-                    ema169 NUMERIC,     
-                    ema576 NUMERIC,
-                    ema676 NUMERIC               
-                );
-                '''
                 try:
                     cur.execute(create_table_query)
                     conn.commit()
                 except psycopg2.DatabaseError as e:
-                    Logger.get_logger().error(f"An error occurred: {e}")
+                    Logger.get_logger().error(f"ERROR: {e}")
 
+    def store_data(self, data, symbol):
+        data['symbol'] = symbol
+        data['exchange'] = Settings.EXCHANGE
+        with self._connect() as conn:
             with conn.cursor() as cur:
                 # 准备一个内存文件对象
                 output = StringIO()
@@ -51,13 +71,25 @@ class Database:
                 # 将数据复制到数据库中
                 # 提供目标表名和列名
                 copy_sql = f'''
-                    COPY "{table_name}" (
-                        open_time,
-                        ema12,
-                        ema144,
-                        ema169,     
-                        ema576,
-                        ema676               
+                    COPY pair_8h (
+        symbol                TEXT                            NOT NULL,
+        exchange              TEXT                            NOT NULL,
+        timestamp             BIGINT                          NOT NULL, 
+        open                  NUMERIC                         NOT NULL,
+        high                  NUMERIC                         NOT NULL,
+        low                   NUMERIC                         NOT NULL,
+        close                 NUMERIC                         NOT NULL,
+        vbtc                  NUMERIC                         NOT NULL,    
+        usd_ema_12            NUMERIC,
+        usd_ema_144           NUMERIC,
+        usd_ema_169           NUMERIC,
+        usd_ema_576           NUMERIC,
+        usd_ema_676           NUMERIC,
+        btc_ema_12            NUMERIC,
+        btc_ema_144           NUMERIC,
+        btc_ema_169           NUMERIC,
+        btc_ema_576           NUMERIC,
+        btc_ema_676           NUMERIC               
                     )
                     FROM STDIN WITH (FORMAT CSV, DELIMITER '\t', HEADER FALSE);
                 '''
@@ -71,7 +103,7 @@ class Database:
         cursor = conn.cursor()
 
         # 执行查询：假设你的表名是your_table，且有一个自增的ID列
-        query = f'SELECT * FROM "{token_name}" ORDER BY open_time DESC LIMIT 1;'
+        query = f'SELECT * FROM "{token_name}" ORDER BY timestamp DESC LIMIT 1;'
 
         try:
             cursor.execute(query)
@@ -89,7 +121,7 @@ class Database:
         conn = self._connect()
         cursor = conn.cursor()
 
-        query = f'DELETE FROM "{token_name}" WHERE open_time BETWEEN {start} AND {end};'
+        query = f'DELETE FROM "{token_name}" WHERE timestamp BETWEEN {start} AND {end};'
 
         try:
             cursor.execute(query)
