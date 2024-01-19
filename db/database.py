@@ -23,7 +23,7 @@ class Database:
 
     def create_table(self):
         create_table_query = f'''
-            CREATE TABLE prices_8h
+            CREATE TABLE IF NOT EXISTS prices_8h
     (
         symbol                TEXT                            NOT NULL,
         exchange              TEXT                            NOT NULL,
@@ -44,7 +44,7 @@ class Database:
         btc_ema_576           NUMERIC,
         btc_ema_676           NUMERIC
     );
-        CREATE INDEX symbol_time ON prices_8h (timestamp, symbol);
+        CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol);
         '''
 
         with self._connect() as conn:
@@ -52,44 +52,50 @@ class Database:
                 try:
                     cur.execute(create_table_query)
                     conn.commit()
+                    Logger.get_logger().info('Create Table.')
                 except psycopg2.DatabaseError as e:
-                    Logger.get_logger().error(f"ERROR: {e}")
+                    Logger.get_logger().error(f"CREATE TABLE: {e}")
 
     def store_data(self, data, symbol):
         data['symbol'] = symbol
         data['exchange'] = Settings.EXCHANGE
+        data.reset_index(inplace=True)
+        data.rename(columns={'index': 'timestamp'}, inplace=True)
+        data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
+                     'usd_ema_12', 'usd_ema_144', 'usd_ema_169', 'usd_ema_576', 'usd_ema_676',
+                     'btc_ema_12', 'btc_ema_144', 'btc_ema_169', 'btc_ema_576', 'btc_ema_676']]
         with self._connect() as conn:
             with conn.cursor() as cur:
                 # 准备一个内存文件对象
                 output = StringIO()
 
                 # 将DataFrame写入内存文件对象
-                data.to_csv(output, sep='\t', header=False, index=True)
+                data.to_csv(output, sep='\t', header=False, index=False)
                 # 移动写指针到开始位置
                 output.seek(0)
 
                 # 将数据复制到数据库中
                 # 提供目标表名和列名
                 copy_sql = f'''
-                    COPY pair_8h (
-        symbol                TEXT                            NOT NULL,
-        exchange              TEXT                            NOT NULL,
-        timestamp             BIGINT                          NOT NULL, 
-        open                  NUMERIC                         NOT NULL,
-        high                  NUMERIC                         NOT NULL,
-        low                   NUMERIC                         NOT NULL,
-        close                 NUMERIC                         NOT NULL,
-        vbtc                  NUMERIC                         NOT NULL,    
-        usd_ema_12            NUMERIC,
-        usd_ema_144           NUMERIC,
-        usd_ema_169           NUMERIC,
-        usd_ema_576           NUMERIC,
-        usd_ema_676           NUMERIC,
-        btc_ema_12            NUMERIC,
-        btc_ema_144           NUMERIC,
-        btc_ema_169           NUMERIC,
-        btc_ema_576           NUMERIC,
-        btc_ema_676           NUMERIC               
+                    COPY prices_8h (
+        symbol,
+        exchange,
+        timestamp,
+        open,
+        high,
+        low,
+        close,
+        vbtc,    
+        usd_ema_12,
+        usd_ema_144,
+        usd_ema_169,
+        usd_ema_576,
+        usd_ema_676,
+        btc_ema_12,
+        btc_ema_144,
+        btc_ema_169,
+        btc_ema_576,
+        btc_ema_676               
                     )
                     FROM STDIN WITH (FORMAT CSV, DELIMITER '\t', HEADER FALSE);
                 '''

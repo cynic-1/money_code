@@ -55,8 +55,8 @@ class MarketDataAnalyser:
 
 def main():
     mda = MarketDataAnalyser()
-    # mda.init_database()
-    mda.update_database()
+    mda.init_database()
+    # mda.update_database()
 
 
 if __name__ == '__main__':
