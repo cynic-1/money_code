@@ -25,9 +25,9 @@ class MarketDataAnalyser:
                 self.logger.error(f'Skip {token}')
                 continue
             prices = self.ema_caculator.calculate_all_ema(prices)
-            prices.drop(['open', 'vbtc'], axis=1, inplace=True)
+            # prices.drop(['open', 'vbtc'], axis=1, inplace=True)
 
-            self.database.store_data(prices, table_name=token)
+            self.database.store_data(prices, symbol=token)
 
             self.logger.info(f"Finish {token} initialization.")
 
@@ -48,7 +48,7 @@ class MarketDataAnalyser:
             prices = self.ema_caculator.update_ema(prices, ema=last_ema)
             prices.drop(['open', 'vbtc'], axis=1, inplace=True)
 
-            self.database.store_data(prices, table_name=token)
+            self.database.store_data(prices, symbol=token)
 
             self.logger.info(f"Finish {token} Update.")
         
