@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Dict
 
 import requests
 from config.settings import Settings
@@ -9,6 +9,14 @@ import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
 
+INTERVAL_MS_MAP: dict[str, int] = {
+    '8h': 8 * 3600 * 1000,
+    '4h': 4 * 3600 * 1000,
+    '1h': 1 * 3600 * 1000,
+    '30m': 30 * 60 * 1000,
+    '15m': 15 * 60 * 1000,
+}
+
 
 class ExchangeAPI:
     def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
@@ -16,14 +24,14 @@ class ExchangeAPI:
         self.limit = limit
 
     def get_token_list(self):
-        response = requests.get(self.base_url+'/defaultSymbols')
+        response = requests.get(self.base_url + '/defaultSymbols')
         response.raise_for_status()
         data = response.json()['data']
         Logger.get_logger().info('Get all token list.')
         return pair2token(data)
 
     def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
-                          interval: str = Settings.DEFAULT_INTERVAL, limit: str = Settings.API_LIMIT
+                          limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL
                           ):
         params = {
             'symbol': f'{symbol}{base}',
@@ -33,18 +41,18 @@ class ExchangeAPI:
             'limit': limit
         }
         Logger.get_logger().debug(f'Requesting {symbol}{base} from {start} to {end}')
-        response = requests.get(self.base_url+'/klines', params=params)
+        response = requests.get(self.base_url + '/klines', params=params)
         response.raise_for_status()
         return response.json()
 
-    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT) -> Optional[DataFrame]:
+    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
         end = get_current_hour_timestamp()
 
         while True:
-            start = end - limit * 8 * 3600 * 1000
+            start = end - limit * INTERVAL_MS_MAP[interval]
             try:
-                tmp = self.get_candle_sticks(symbol, start=start, end=end)
+                tmp = self.get_candle_sticks(symbol, start=start, end=end, limit=limit, interval=interval)
                 n_entries = len(tmp)
                 candle_sticks += tmp
                 end = start
@@ -60,15 +68,15 @@ class ExchangeAPI:
 
         return list2df_kline(candle_sticks)
 
-    def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT):
-        if end_time - last_time < 8 * 3600 * 1000:
+    def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL):
+        if end_time - last_time < INTERVAL_MS_MAP[interval]:
             return None
 
         candle_sticks = []
         end = end_time
 
         while True:
-            start = end - limit * 8 * 3600 * 1000
+            start = end - limit * INTERVAL_MS_MAP[interval]
             if start < last_time:
                 start = last_time
             if end <= start:
