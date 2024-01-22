@@ -34,10 +34,10 @@ class MarketDataAnalyser:
     def update_database(self):
         cur = get_current_hour_timestamp()
         for token in self.token_list:
-            last_ema = self.database.get_latest_data(token)
+            last_ema = self.database.get_latest_data(token, 1)
             if last_ema is None:
                 continue
-            self.logger.debug(f'Table {token} last record open_time: {last_ema[0]}')
+            self.logger.debug(f'Symbol {token} last record open time: {last_ema[0]}')
             # 加一个小的偏移量是为了避免获得重复数据。
             time = last_ema[0] + 10000
 

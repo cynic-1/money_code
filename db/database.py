@@ -104,12 +104,12 @@ class Database:
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
 
-    def get_latest_data(self, token_name):
+    def get_latest_data(self, token_name, num):
         conn = self._connect()
         cursor = conn.cursor()
 
         # 执行查询：假设你的表名是your_table，且有一个自增的ID列
-        query = f'SELECT * FROM "{token_name}" ORDER BY timestamp DESC LIMIT 1;'
+        query = f'SELECT * FROM prices_8h WHERE SYMBOL = "{token_name}" ORDER BY timestamp DESC LIMIT {num};'
 
         try:
             cursor.execute(query)
