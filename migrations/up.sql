@@ -20,4 +20,4 @@ CREATE TABLE IF NOT EXISTS prices_8h
         btc_ema_676           NUMERIC
     );
     CREATE INDEX IF NOT EXISTS ex_symbol_time on prices_8h (exchange, symbol, timestamp);
-    CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol);
+    CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol, exchange);
