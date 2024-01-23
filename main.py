@@ -28,7 +28,7 @@ class MarketDataAnalyser:
                     continue
                 prices = self.ema_caculator.calculate_all_ema(prices)
 
-                prices['count'] = prices.index + 1
+                prices['count'] = list(range(1, len(prices)+1))
 
                 self.database.store_data(prices, symbol=token)
 
@@ -44,7 +44,7 @@ class MarketDataAnalyser:
                     continue
                 prices = self.ema_caculator.update_ema(prices, ema=last_ema)
 
-                prices['count'] = prices.index + last_ema[-1] + 1
+                prices['count'] = list(range(last_ema[-1]+1, len(prices)+last_ema[-1]+1))
 
                 self.database.store_data(prices, symbol=token)
 

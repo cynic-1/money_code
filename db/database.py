@@ -8,7 +8,7 @@ from config.settings import Settings
 class Database:
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read('../config/config.ini')
+        config.read('config/config.ini')
         self.connection_params = {
             'dbname': config['database']['dbname'],
             'user': config['database']['user'],
@@ -125,7 +125,8 @@ class Database:
         btc_ema_144,
         btc_ema_169,
         btc_ema_576,
-        btc_ema_676 FROM prices_8h 
+        btc_ema_676,
+        count FROM prices_8h 
         WHERE SYMBOL = \'{token_name}\' AND EXCHANGE = \'{Settings.EXCHANGE}\' ORDER BY timestamp DESC LIMIT {num};
         '''
 
