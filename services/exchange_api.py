@@ -22,9 +22,10 @@ class ExchangeAPI:
     def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
         self.base_url = base_url
         self.limit = limit
+        self.session = requests.Session()
 
     def get_token_list(self):
-        response = requests.get(self.base_url + '/defaultSymbols')
+        response = self.session.get(self.base_url + '/defaultSymbols')
         response.raise_for_status()
         data = response.json()['data']
         Logger.get_logger().info('Get all token list.')
@@ -41,7 +42,7 @@ class ExchangeAPI:
             'limit': limit
         }
         Logger.get_logger().debug(f'Requesting {symbol}{base} from {start} to {end}')
-        response = requests.get(self.base_url + '/klines', params=params)
+        response = self.session.get(self.base_url + '/klines', params=params)
         response.raise_for_status()
         return response.json()
 

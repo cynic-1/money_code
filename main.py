@@ -30,7 +30,7 @@ class MarketDataAnalyser:
 
                 prices['count'] = list(range(1, len(prices)+1))
 
-                self.database.store_data(prices, symbol=token)
+                self.database.commit_to_write_cache(prices, symbol=token)
 
                 self.logger.info(f"Finish {token} initialization.")
             else:
@@ -46,9 +46,10 @@ class MarketDataAnalyser:
 
                 prices['count'] = list(range(last_ema[-1]+1, len(prices)+last_ema[-1]+1))
 
-                self.database.store_data(prices, symbol=token)
+                self.database.commit_to_write_cache(prices, symbol=token)
 
                 self.logger.info(f"Finish {token} Update.")
+        self.database.write_data()
 
     def init_database(self):
         for token in self.token_list:
@@ -58,7 +59,7 @@ class MarketDataAnalyser:
                 continue
             prices = self.ema_caculator.calculate_all_ema(prices)
 
-            self.database.store_data(prices, symbol=token)
+            self.database.commit_to_write_cache(prices, symbol=token)
 
             self.logger.info(f"Finish {token} initialization.")
 
@@ -78,7 +79,7 @@ class MarketDataAnalyser:
                 continue
             prices = self.ema_caculator.update_ema(prices, ema=last_ema)
 
-            self.database.store_data(prices, symbol=token)
+            self.database.commit_to_write_cache(prices, symbol=token)
 
             self.logger.info(f"Finish {token} Update.")
 

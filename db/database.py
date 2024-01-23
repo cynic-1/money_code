@@ -3,6 +3,7 @@ import configparser
 from io import StringIO
 from utils.logger import Logger
 from config.settings import Settings
+from pandas import DataFrame
 
 
 class Database:
@@ -16,6 +17,7 @@ class Database:
             'host': config['database']['host'],
             'port': config['database']['port']
         }
+        self.cache = DataFrame()
         self.create_table()
 
     def _connect(self):
@@ -58,12 +60,15 @@ class Database:
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"CREATE TABLE: {e}")
 
-    def store_data(self, data, symbol):
+    def commit_to_write_cache(self, data, symbol):
         data['symbol'] = symbol
-        data['exchange'] = Settings.EXCHANGE
-        data.reset_index(inplace=True)
-        data.rename(columns={'index': 'timestamp'}, inplace=True)
-        data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
+        self.cache.append(data)
+
+    def write_data(self):
+        self.cache['exchange'] = Settings.EXCHANGE
+        self.cache.reset_index(inplace=True)
+        self.cache.rename(columns={'index': 'timestamp'}, inplace=True)
+        self.cache = self.cache[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
                      'usd_ema_12', 'usd_ema_144', 'usd_ema_169', 'usd_ema_576', 'usd_ema_676',
                      'btc_ema_12', 'btc_ema_144', 'btc_ema_169', 'btc_ema_576', 'btc_ema_676', 'count']]
         with self._connect() as conn:
@@ -72,7 +77,7 @@ class Database:
                 output = StringIO()
 
                 # 将DataFrame写入内存文件对象
-                data.to_csv(output, sep='\t', header=False, index=False)
+                self.cache.to_csv(output, sep='\t', header=False, index=False)
                 # 移动写指针到开始位置
                 output.seek(0)
 
@@ -106,6 +111,8 @@ class Database:
                     cur.copy_expert(sql=copy_sql, file=output)
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
+
+        self.cache = DataFrame()
 
     def get_latest_data(self, token_name, num=1):
         conn = self._connect()
