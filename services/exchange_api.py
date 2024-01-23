@@ -66,6 +66,8 @@ class ExchangeAPI:
                 print(f"An error occurred: {e}")
                 time.sleep(0.5)
 
+        if not candle_sticks:
+            return None
         return list2df_kline(candle_sticks)
 
     def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL):
