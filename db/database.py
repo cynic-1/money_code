@@ -42,9 +42,11 @@ class Database:
         btc_ema_144           NUMERIC,
         btc_ema_169           NUMERIC,
         btc_ema_576           NUMERIC,
-        btc_ema_676           NUMERIC
+        btc_ema_676           NUMERIC,
+        count                 INT                             NOT NULL
     );
-        CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol);
+        CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol, exchange);
+        CREATE INDEX IF NOT EXISTS ex_symbol_time on prices_8h (exchange, symbol, timestamp);
         '''
 
         with self._connect() as conn:
@@ -63,7 +65,7 @@ class Database:
         data.rename(columns={'index': 'timestamp'}, inplace=True)
         data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
                      'usd_ema_12', 'usd_ema_144', 'usd_ema_169', 'usd_ema_576', 'usd_ema_676',
-                     'btc_ema_12', 'btc_ema_144', 'btc_ema_169', 'btc_ema_576', 'btc_ema_676']]
+                     'btc_ema_12', 'btc_ema_144', 'btc_ema_169', 'btc_ema_576', 'btc_ema_676', 'count']]
         with self._connect() as conn:
             with conn.cursor() as cur:
                 # 准备一个内存文件对象
@@ -95,7 +97,8 @@ class Database:
         btc_ema_144,
         btc_ema_169,
         btc_ema_576,
-        btc_ema_676               
+        btc_ema_676,
+        count               
                     )
                     FROM STDIN WITH (FORMAT CSV, DELIMITER '\t', HEADER FALSE);
                 '''
@@ -112,6 +115,7 @@ class Database:
         query = f'''
         SELECT 
         timestamp,
+        symbol,
         usd_ema_12,
         usd_ema_144,
         usd_ema_169,
@@ -133,24 +137,6 @@ class Database:
             Logger.get_logger().error("Unable to retrieve the latest record from the database.")
             Logger.get_logger().error(e)
             return None
-        finally:
-            cursor.close()
-            conn.close()
-
-    def delete_data(self, token_name, start, end):
-        conn = self._connect()
-        cursor = conn.cursor()
-
-        query = f'DELETE FROM "{token_name}" WHERE timestamp BETWEEN {start} AND {end};'
-
-        try:
-            cursor.execute(query)
-            # 提交事务
-            conn.commit()
-            Logger.get_logger().error(f"Deleted {cursor.rowcount} rows successfully from table {token_name}.")
-        except psycopg2.Error as e:
-            Logger.get_logger().error("Unable to delete the record.")
-            Logger.get_logger().error(e)
         finally:
             cursor.close()
             conn.close()
