@@ -20,19 +20,21 @@ class MarketDataAnalyser:
         cur = get_current_hour_timestamp()
         for token in self.token_list:
             last_ema = self.database.get_latest_data(token, 1)
-            # initiation logic
-            if last_ema is None:
+            # if fetchone() finds no matching row, it returns None
+            if last_ema is None:  # initiation logic
                 prices = self.exchange_api.init_history_price(symbol=token)
                 if prices is None:
                     self.logger.error(f'Skip {token}')
                     continue
                 prices = self.ema_caculator.calculate_all_ema(prices)
 
+                prices['count'] = prices.index + 1
+
                 self.database.store_data(prices, symbol=token)
 
                 self.logger.info(f"Finish {token} initialization.")
             else:
-                self.logger.debug(f'Symbol {token} last record open time: {last_ema[3]}')
+                self.logger.debug(f'Symbol {token} last record open time: {last_ema[0]}')
                 # 加一个小的偏移量是为了避免获得重复数据。
                 time = last_ema[0] + 10000
 
@@ -41,6 +43,8 @@ class MarketDataAnalyser:
                     self.logger.error(f'Skip {token}')
                     continue
                 prices = self.ema_caculator.update_ema(prices, ema=last_ema)
+
+                prices['count'] = prices.index + last_ema[-1] + 1
 
                 self.database.store_data(prices, symbol=token)
 
@@ -77,7 +81,7 @@ class MarketDataAnalyser:
             self.database.store_data(prices, symbol=token)
 
             self.logger.info(f"Finish {token} Update.")
-        
+
 
 def main():
     mda = MarketDataAnalyser()
@@ -88,4 +92,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

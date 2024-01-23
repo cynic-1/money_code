@@ -30,18 +30,11 @@ class EmaCaculator:
     def update_ema(self, prices: DataFrame, ema) -> DataFrame:
         ema_list = {}
         _, ema_list['usd_ema_12'], ema_list['usd_ema_144'], ema_list['usd_ema_169'], ema_list['usd_ema_576'], ema_list['usd_ema_676'], \
-            ema_list['btc_ema_12'], ema_list['btc_ema_144'], ema_list['btc_ema_169'], ema_list['btc_ema_576'], ema_list['btc_ema_676'] = ema
+            ema_list['btc_ema_12'], ema_list['btc_ema_144'], ema_list['btc_ema_169'], ema_list['btc_ema_576'], ema_list['btc_ema_676', _] = ema
         prices['vbtc'] = prices['open'] / self.btc['open']
 
         for num in self.ema_list:
-            if ema_list[f'usd_ema_{num}'] is None:
-                Logger.get_logger().info('No enough data to calculate, skip')
-            else:
-                prices[f'usd_ema_{num}'] = _update_ema(float(ema_list[f'usd_ema_{num}']), prices['open'], num)
-
-            if ema_list[f'btc_ema_{num}'] is None:
-                Logger.get_logger().info('No enough data to calculate, skip')
-            else:
-                prices[f'btc_ema_{num}'] = _update_ema(float(ema_list[f'btc_ema_{num}']), prices['vbtc'], num)
+            prices[f'usd_ema_{num}'] = _update_ema(float(ema_list[f'usd_ema_{num}']), prices['open'], num)
+            prices[f'btc_ema_{num}'] = _update_ema(float(ema_list[f'btc_ema_{num}']), prices['vbtc'], num)
 
         return prices
