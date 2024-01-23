@@ -3,6 +3,8 @@
 ## Install and Setup postgreSQL
 
 ```bash
+$ sudo apt update
+
 $ sudo apt install postgresql postgresql-contrib
 
 $ sudo systemctl enable postgresql
@@ -38,5 +40,7 @@ $ cp config/config.ini.example config/config.ini
 
 $ vim config/config.ini
 
+$ pip install -r requirements.txt
 
+$ python3 main.py
 ```
