@@ -8,7 +8,7 @@ from config.settings import Settings
 class Database:
     def __init__(self):
         config = configparser.ConfigParser()
-        config.read('config/config.ini')
+        config.read('../config/config.ini')
         self.connection_params = {
             'dbname': config['database']['dbname'],
             'user': config['database']['user'],
@@ -104,12 +104,26 @@ class Database:
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
 
-    def get_latest_data(self, token_name, num):
+    def get_latest_data(self, token_name, num=1):
         conn = self._connect()
         cursor = conn.cursor()
 
         # 执行查询：假设你的表名是your_table，且有一个自增的ID列
-        query = f'SELECT * FROM prices_8h WHERE SYMBOL = "{token_name}" ORDER BY timestamp DESC LIMIT {num};'
+        query = f'''
+        SELECT 
+        timestamp,
+        usd_ema_12,
+        usd_ema_144,
+        usd_ema_169,
+        usd_ema_576,
+        usd_ema_676,
+        btc_ema_12,
+        btc_ema_144,
+        btc_ema_169,
+        btc_ema_576,
+        btc_ema_676 FROM prices_8h 
+        WHERE SYMBOL = \'{token_name}\' AND EXCHANGE = \'{Settings.EXCHANGE}\' ORDER BY timestamp DESC LIMIT {num};
+        '''
 
         try:
             cursor.execute(query)

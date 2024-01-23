@@ -1,5 +1,5 @@
 from pandas import DataFrame
-
+from utils.logger import Logger
 
 def _update_ema(last_ema, new_data, span):
     multiplier = 2 / (span + 1)
@@ -28,11 +28,20 @@ class EmaCaculator:
         return prices
 
     def update_ema(self, prices: DataFrame, ema) -> DataFrame:
-        _, ema12, ema144, ema169, ema576, ema676 = ema
+        ema_list = {}
+        _, ema_list['usd_ema_12'], ema_list['usd_ema_144'], ema_list['usd_ema_169'], ema_list['usd_ema_576'], ema_list['usd_ema_676'], \
+            ema_list['btc_ema_12'], ema_list['btc_ema_144'], ema_list['btc_ema_169'], ema_list['btc_ema_576'], ema_list['btc_ema_676'] = ema
         prices['vbtc'] = prices['open'] / self.btc['open']
-        prices['ema12'] = _update_ema(float(ema12), prices['vbtc'], 12)
-        prices['ema144'] = _update_ema(float(ema144), prices['vbtc'], 144)
-        prices['ema169'] = _update_ema(float(ema169), prices['vbtc'], 169)
-        prices['ema576'] = _update_ema(float(ema576), prices['vbtc'], 576)
-        prices['ema676'] = _update_ema(float(ema676), prices['vbtc'], 676)
+
+        for num in self.ema_list:
+            if ema_list[f'usd_ema_{num}'] is None:
+                Logger.get_logger().info('No enough data to calculate, skip')
+            else:
+                prices[f'usd_ema_{num}'] = _update_ema(float(ema_list[f'usd_ema_{num}']), prices['open'], num)
+
+            if ema_list[f'btc_ema_{num}'] is None:
+                Logger.get_logger().info('No enough data to calculate, skip')
+            else:
+                prices[f'btc_ema_{num}'] = _update_ema(float(ema_list[f'btc_ema_{num}']), prices['vbtc'], num)
+
         return prices
