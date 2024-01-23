@@ -115,7 +115,6 @@ class Database:
         query = f'''
         SELECT 
         timestamp,
-        symbol,
         usd_ema_12,
         usd_ema_144,
         usd_ema_169,

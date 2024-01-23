@@ -34,7 +34,7 @@ class MarketDataAnalyser:
 
                 self.logger.info(f"Finish {token} initialization.")
             else:
-                self.logger.debug(f'Symbol {token} last record open time: {last_ema[0]}')
+                self.logger.info(f'Symbol {token} last record: {last_ema}')
                 # 加一个小的偏移量是为了避免获得重复数据。
                 time = last_ema[0] + 10000
 

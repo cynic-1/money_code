@@ -30,7 +30,7 @@ class EmaCaculator:
     def update_ema(self, prices: DataFrame, ema) -> DataFrame:
         ema_list = {}
         _, ema_list['usd_ema_12'], ema_list['usd_ema_144'], ema_list['usd_ema_169'], ema_list['usd_ema_576'], ema_list['usd_ema_676'], \
-            ema_list['btc_ema_12'], ema_list['btc_ema_144'], ema_list['btc_ema_169'], ema_list['btc_ema_576'], ema_list['btc_ema_676', _] = ema
+            ema_list['btc_ema_12'], ema_list['btc_ema_144'], ema_list['btc_ema_169'], ema_list['btc_ema_576'], ema_list['btc_ema_676'], count = ema
         prices['vbtc'] = prices['open'] / self.btc['open']
 
         for num in self.ema_list:
