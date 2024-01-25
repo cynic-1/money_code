@@ -79,6 +79,7 @@ class Database:
 
                 # 将DataFrame写入内存文件对象
                 data.to_csv(output, sep='\t', header=False, index=False)
+                data.to_csv('out.csv', header=False, index=False)  
                 # 移动写指针到开始位置
                 output.seek(0)
 
