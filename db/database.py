@@ -110,7 +110,8 @@ class Database:
                     FROM STDIN WITH (FORMAT CSV, DELIMITER '\t', HEADER FALSE);
                 '''
                 try:
-                    cur.copy_expert(sql=copy_sql, file=output)
+                    cur.copy_from(output, "prices_8h", sep="\t")
+                    conn.commit()
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
 
