@@ -66,6 +66,7 @@ class Database:
 
     def write_data(self):
         data = pd.concat(self.cache)
+        self.cache = []
         data['exchange'] = Settings.EXCHANGE
         data.reset_index(inplace=True)
         data.rename(columns={'index': 'timestamp'}, inplace=True)
@@ -78,7 +79,7 @@ class Database:
                 output = StringIO()
 
                 # 将DataFrame写入内存文件对象
-                data.to_csv(output, sep='\t', header=False, index=False)
+                data = data.to_csv(output, sep='\t', header=False, index=False)
                 # 移动写指针到开始位置
                 output.seek(0)
 
@@ -112,8 +113,6 @@ class Database:
                     cur.copy_expert(sql=copy_sql, file=output)
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
-
-        self.cache = []
 
     def get_latest_data(self, token_name, num=1):
         conn = self._connect()
