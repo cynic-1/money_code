@@ -1,3 +1,6 @@
+CREATE USER cypher WITH PASSWORD 'qwer1234';
+ALTER USER cypher WITH SUPERUSER;
+
 CREATE TABLE IF NOT EXISTS prices_8h
     (
         symbol                TEXT                            NOT NULL,
@@ -20,4 +23,4 @@ CREATE TABLE IF NOT EXISTS prices_8h
         btc_ema_676           NUMERIC
     );
     CREATE INDEX IF NOT EXISTS ex_symbol_time on prices_8h (exchange, symbol, timestamp);
-    CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol, exchange);
+    CREATE INDEX IF NOT EXISTS ex_time_symbol ON prices_8h (exchange, timestamp, symbol);
