@@ -4,7 +4,7 @@ import requests
 from config.settings import Settings
 from pandas import DataFrame
 from utils.timestamp import get_current_hour_timestamp
-from utils.transform import list2df_kline, pair2token
+from utils.transform import list2df_kline, pair2token, list2symbol_fullname
 import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
@@ -24,12 +24,20 @@ class ExchangeAPI:
         self.limit = limit
         self.session = requests.Session()
 
+    # Deprecated for now
     def get_token_list(self):
         response = self.session.get(self.base_url + '/defaultSymbols')
         response.raise_for_status()
         data = response.json()['data']
         Logger.get_logger().info('Get all token list.')
         return pair2token(data)
+
+    def get_token_full_name(self):
+        response = self.session.get(self.base_url + '/exchangeInfo')
+        response.raise_for_status()
+        data = response.json()['data']['symbols']
+        Logger.get_logger().info('Get token fullname.')
+        return list2symbol_fullname(data)
 
     def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
                           limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL

@@ -19,6 +19,7 @@ class Database:
         }
         self.cache = []
         self.create_table()
+        self.create_token_info_table()
 
     def _connect(self):
         return psycopg2.connect(**self.connection_params)
@@ -85,9 +86,9 @@ class Database:
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
 
-    def get_latest_data(self, token_name, num=1):
+    def get_latest_data_by_symbol(self, symbol, num=1):
         conn = self._connect()
-        cursor = conn.cursor()
+        cur = conn.cursor()
 
         # 执行查询：假设你的表名是your_table，且有一个自增的ID列
         query = f'''
@@ -104,17 +105,65 @@ class Database:
         btc_ema_576,
         btc_ema_676,
         count FROM prices_8h 
-        WHERE SYMBOL = \'{token_name}\' AND EXCHANGE = \'{Settings.EXCHANGE}\' ORDER BY timestamp DESC LIMIT {num};
+        WHERE SYMBOL = \'{symbol}\' AND EXCHANGE = \'{Settings.EXCHANGE}\' ORDER BY timestamp DESC LIMIT {num};
         '''
 
         try:
-            cursor.execute(query)
-            latest_record = cursor.fetchone()
+            cur.execute(query)
+            latest_record = cur.fetchone()
             return latest_record
         except psycopg2.Error as e:
             Logger.get_logger().error("Unable to retrieve the latest record from the database.")
             Logger.get_logger().error(e)
             return None
         finally:
-            cursor.close()
+            cur.close()
             conn.close()
+
+    def create_token_info_table(self):
+        create_table_query = f'''
+            CREATE TABLE IF NOT EXISTS token_info
+    (
+        symbol                TEXT                            NOT NULL,
+        exchange              TEXT                            NOT NULL,
+        full_name             TEXT                            NOT NULL, 
+        latest_timestamp      BIGINT                          NOT NULL,
+        CONSTRAINT unique_symbol_exchange UNIQUE (symbol, exchange)
+    );
+        CREATE INDEX IF NOT EXISTS symbol_ex ON prices_8h (symbol, exchange);
+        CREATE INDEX IF NOT EXISTS ex_symbol on prices_8h (exchange, symbol);
+        '''
+
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                try:
+                    cur.execute(create_table_query)
+                    conn.commit()
+                    Logger.get_logger().info('Create Token Info Table.')
+                except psycopg2.DatabaseError as e:
+                    Logger.get_logger().error(f"CREATE TABLE: {e}")
+
+    def write_to_token_info(self, data):
+        insert_query = f"""
+            INSERT INTO TOKEN_INFO (symbol, full_name, lastest_timestamp, exchange)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (symbol, exchange) DO UPDATE SET 
+            latest_timestamp = EXCLUDED.latest_timestamp;
+        """
+
+        conn = self._connect()
+        cur = conn.cursor()
+
+        try:
+            for index, row in data.iterrows():
+                cur.execute(insert_query, tuple(row))
+            conn.commit()
+            Logger.get_logger().info("Update token info.")
+        except psycopg2.Error as e:
+            Logger.get_logger().error(f"Unable to retrieve the latest record from the database: {e}")
+        finally:
+            cur.close()
+            conn.close()
+
+
+

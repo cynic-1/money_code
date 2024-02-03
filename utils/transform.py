@@ -24,3 +24,14 @@ def pair2token(data: list):
     unique_list = list(set(token_list))
     unique_list.sort()
     return unique_list
+
+def list2symbol_fullname(data: list):
+    res = []
+    for symbol_map in data:
+        res.append(
+            {
+                'symbol': symbol_map['baseAsset'],
+                'fullname': symbol_map['fullname']
+            }
+        )
+    return res

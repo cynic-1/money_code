@@ -1,3 +1,5 @@
+import pandas
+
 from utils.logger import Logger
 from services.exchange_api import ExchangeAPI
 from services.ema_caculator import EmaCaculator
@@ -14,12 +16,18 @@ class MarketDataAnalyser:
         self.exchange_api = ExchangeAPI()
         self.ema_caculator = EmaCaculator(exchangeAPI=self.exchange_api)
         self.database = Database()
-        self.token_list = self.exchange_api.get_token_list()
+        self.token_info = self.exchange_api.get_token_full_name()
+
+    def update_token_info(self):
+        df = pandas.DataFrame(self.token_info)
+        df['latest_timestamp'] = df.apply(lambda row: self.database.get_latest_data_by_symbol(row['symbol'])[0], axis=1)
+        df['exchange'] = Settings.EXCHANGE
+        self.database.write_to_token_info(df)
 
     def get_data(self):
         cur = get_current_hour_timestamp()
-        for token in self.token_list:
-            last_ema = self.database.get_latest_data(token, 1)
+        for token, _ in self.token_info:
+            last_ema = self.database.get_latest_data_by_symbol(token, 1)
             # if fetchone() finds no matching row, it returns None
             if last_ema is None:  # initiation logic
                 prices = self.exchange_api.init_history_price(symbol=token)
@@ -52,7 +60,7 @@ class MarketDataAnalyser:
         self.database.write_data()
 
     def init_database(self):
-        for token in self.token_list:
+        for token, _ in self.token_info:
             prices = self.exchange_api.init_history_price(symbol=token)
             if prices is None:
                 self.logger.error(f'Skip {token}')
@@ -65,8 +73,8 @@ class MarketDataAnalyser:
 
     def update_database(self):
         cur = get_current_hour_timestamp()
-        for token in self.token_list:
-            last_ema = self.database.get_latest_data(token, 1)
+        for token, _ in self.token_info:
+            last_ema = self.database.get_latest_data_by_symbol(token, 1)
             if last_ema is None:
                 continue
             self.logger.debug(f'Symbol {token} last record open time: {last_ema[3]}')
