@@ -35,7 +35,7 @@ class ExchangeAPI:
     def get_token_full_name(self):
         response = self.session.get(self.base_url + '/exchangeInfo')
         response.raise_for_status()
-        data = response.json()['data']['symbols']
+        data = response.json()['symbols']
         Logger.get_logger().info('Get token fullname.')
         return list2symbol_fullname(data)
 

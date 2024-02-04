@@ -19,14 +19,23 @@ class MarketDataAnalyser:
         self.token_info = self.exchange_api.get_token_full_name()
 
     def update_token_info(self):
+        def _get_latest_time(row, db):
+            sb = row['symbol']
+            res = db.get_latest_data_by_symbol(sb)
+            if res is None or res[0] is None:
+                return None
+            else:
+                return res[0]
+
         df = pandas.DataFrame(self.token_info)
-        df['latest_timestamp'] = df.apply(lambda row: self.database.get_latest_data_by_symbol(row['symbol'])[0], axis=1)
+        df['latest_timestamp'] = df.apply(_get_latest_time, args=(self.database,), axis=1)
         df['exchange'] = Settings.EXCHANGE
         self.database.write_to_token_info(df)
 
     def get_data(self):
         cur = get_current_hour_timestamp()
-        for token, _ in self.token_info:
+        for ti in self.token_info:
+            token = ti['symbol']
             last_ema = self.database.get_latest_data_by_symbol(token, 1)
             # if fetchone() finds no matching row, it returns None
             if last_ema is None:  # initiation logic
@@ -60,7 +69,8 @@ class MarketDataAnalyser:
         self.database.write_data()
 
     def init_database(self):
-        for token, _ in self.token_info:
+        for ti in self.token_info:
+            token = ti['symbol']
             prices = self.exchange_api.init_history_price(symbol=token)
             if prices is None:
                 self.logger.error(f'Skip {token}')
@@ -73,7 +83,8 @@ class MarketDataAnalyser:
 
     def update_database(self):
         cur = get_current_hour_timestamp()
-        for token, _ in self.token_info:
+        for ti in self.token_info:
+            token = ti['symbol']
             last_ema = self.database.get_latest_data_by_symbol(token, 1)
             if last_ema is None:
                 continue
@@ -94,9 +105,8 @@ class MarketDataAnalyser:
 
 def main():
     mda = MarketDataAnalyser()
-    mda.get_data()
-    # mda.init_database()
-    # mda.update_database()
+    # mda.get_data()
+    mda.update_token_info()
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ from io import StringIO
 from utils.logger import Logger
 from config.settings import Settings
 import pandas as pd
+import numpy as np
 
 
 class Database:
@@ -146,12 +147,12 @@ class Database:
                     Logger.get_logger().error(f"CREATE TABLE: {e}")
 
     def write_to_token_info(self, data):
-        columns = df.columns.tolist()
+        columns = data.columns.tolist()
         columns_str = ', '.join(columns)
 
         insert_query = f"""
             INSERT INTO TOKEN_INFO ({columns_str})
-            VALUES (%s, %s, %s)
+            VALUES (%s, %s, %s, %s)
             ON CONFLICT (symbol, exchange) DO UPDATE SET 
             latest_timestamp = EXCLUDED.latest_timestamp;
         """
@@ -159,13 +160,16 @@ class Database:
         conn = self._connect()
         cur = conn.cursor()
 
-        try:
-            for index, row in data.iterrows():
+        for index, row in data.iterrows():
+            if np.isnan(row['latest_timestamp']):
+                continue
+            try:
                 cur.execute(insert_query, tuple(row))
-            conn.commit()
-            Logger.get_logger().info("Update token info.")
-        except psycopg2.Error as e:
-            Logger.get_logger().error(f"Unable to retrieve the latest record from the database: {e}")
-        finally:
-            cur.close()
-            conn.close()
+            except psycopg2.Error as e:
+                Logger.get_logger().error(f"Update token info: {e}, row: {row}")
+                return
+        conn.commit()
+        Logger.get_logger().info("Update token info.")
+
+        cur.close()
+        conn.close()
