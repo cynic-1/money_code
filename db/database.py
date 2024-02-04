@@ -66,6 +66,8 @@ class Database:
         self.cache.append(data)
 
     def write_data(self):
+        if self.cache == []:
+            return
         data = pd.concat(self.cache)
         self.cache = []
         data['exchange'] = Settings.EXCHANGE
@@ -144,8 +146,11 @@ class Database:
                     Logger.get_logger().error(f"CREATE TABLE: {e}")
 
     def write_to_token_info(self, data):
+        columns = df.columns.tolist()
+        columns_str = ', '.join(columns)
+
         insert_query = f"""
-            INSERT INTO TOKEN_INFO (symbol, full_name, lastest_timestamp, exchange)
+            INSERT INTO TOKEN_INFO ({columns_str})
             VALUES (%s, %s, %s)
             ON CONFLICT (symbol, exchange) DO UPDATE SET 
             latest_timestamp = EXCLUDED.latest_timestamp;
@@ -164,6 +169,3 @@ class Database:
         finally:
             cur.close()
             conn.close()
-
-
-
