@@ -5,4 +5,3 @@ class Settings:
     DEFAULT_INTERVAL = "8h"
     DEFAULT_BASE = "USDT"
     CONNECTION_PARAMS = None
-    TOKEN_LIST = "tokens.json"
