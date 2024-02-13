@@ -3,7 +3,7 @@ from typing import Optional, Dict
 import requests
 from config.settings import Settings
 from pandas import DataFrame
-from utils.timestamp import get_current_hour_timestamp
+from utils.timestamp import get_current_hour_timestamp_ms
 from utils.transform import list2df_kline, pair2token, list2symbol_fullname
 import time
 from utils.logger import Logger
@@ -56,7 +56,7 @@ class ExchangeAPI:
 
     def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
-        end = get_current_hour_timestamp()
+        end = get_current_hour_timestamp_ms()
 
         while True:
             start = end - limit * INTERVAL_MS_MAP[interval]
@@ -84,7 +84,8 @@ class ExchangeAPI:
             return None
 
         candle_sticks = []
-        end = end_time
+        # 加一个小的偏移量是为了避免获得重复数据。
+        end = end_time+10000
 
         while True:
             start = end - limit * INTERVAL_MS_MAP[interval]
