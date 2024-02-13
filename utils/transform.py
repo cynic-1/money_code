@@ -14,6 +14,19 @@ def list2df_kline(data: list):
     return df
 
 
+def gate_list2df_kline(data: list):
+    df = DataFrame(data)
+    df.columns = ['timestamp', 'turnover', 'close', 'high', 'low', 'open', 'volume', 'is_over']
+    df.drop(['volume', 'is_over', 'turnover'], axis=1, inplace=True)
+    df.set_index('timestamp', inplace=True)
+    df.sort_index(inplace=True)
+    df['open'] = df['open'].astype('float64')
+    df['high'] = df['high'].astype('float64')
+    df['low'] = df['low'].astype('float64')
+    df['close'] = df['close'].astype('float64')
+    return df
+
+
 def pair2token(data: list):
     token_list = []
     for token in data:
@@ -27,6 +40,18 @@ def pair2token(data: list):
 
 
 def list2symbol_fullname(data: list):
+    res = []
+    for symbol_map in data:
+        res.append(
+            {
+                'symbol': symbol_map['baseAsset'],
+                'full_name': symbol_map['fullName']
+            }
+        )
+    return res
+
+
+def gate_list2symbol_fullname(data: list):
     res = []
     for symbol_map in data:
         res.append(
