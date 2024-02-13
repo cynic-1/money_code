@@ -5,8 +5,7 @@ from services.exchange_api import ExchangeAPI
 from services.ema_caculator import EmaCaculator
 from db.database import Database
 from config.settings import Settings
-import json
-from utils.timestamp import get_current_hour_timestamp
+from utils.timestamp import get_current_hour_timestamp_ms
 
 
 class MarketDataAnalyser:
@@ -33,7 +32,7 @@ class MarketDataAnalyser:
         self.database.write_to_token_info(df)
 
     def get_data(self):
-        cur = get_current_hour_timestamp()
+        cur = get_current_hour_timestamp_ms()
         for ti in self.token_info:
             token = ti['symbol']
             last_ema = self.database.get_latest_data_by_symbol(token, 1)
@@ -67,40 +66,6 @@ class MarketDataAnalyser:
 
                 self.logger.info(f"Finish {token} Update.")
         self.database.write_data()
-
-    def init_database(self):
-        for ti in self.token_info:
-            token = ti['symbol']
-            prices = self.exchange_api.init_history_price(symbol=token)
-            if prices is None:
-                self.logger.error(f'Skip {token}')
-                continue
-            prices = self.ema_caculator.calculate_all_ema(prices)
-
-            self.database.commit_to_write_cache(prices, symbol=token)
-
-            self.logger.info(f"Finish {token} initialization.")
-
-    def update_database(self):
-        cur = get_current_hour_timestamp()
-        for ti in self.token_info:
-            token = ti['symbol']
-            last_ema = self.database.get_latest_data_by_symbol(token, 1)
-            if last_ema is None:
-                continue
-            self.logger.debug(f'Symbol {token} last record open time: {last_ema[3]}')
-            # 加一个小的偏移量是为了避免获得重复数据。
-            time = last_ema[0] + 10000
-
-            prices = self.exchange_api.get_history_price(symbol=token, last_time=time, end_time=cur)
-            if prices is None:
-                self.logger.error(f'Skip {token}')
-                continue
-            prices = self.ema_caculator.update_ema(prices, ema=last_ema)
-
-            self.database.commit_to_write_cache(prices, symbol=token)
-
-            self.logger.info(f"Finish {token} Update.")
 
 
 def main():
