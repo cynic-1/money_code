@@ -1,5 +1,5 @@
 import pandas
-
+import sys
 from utils.logger import Logger
 from services.mexc_exchange_api import MexcExchangeAPI
 from services.gate_exchange_api import GateExchangeAPI
@@ -19,12 +19,12 @@ class MarketDataAnalyser:
         # self.token_info = self.exchange_api.get_token_full_name()
         self.token_info = [
             {
-                'symbol': 'ETH',
-                'full_name': 'Ethereum'
+                'symbol': 'NADA',
+                'full_name': 'NADA Protocol Token'
             },
             {
-                'symbol': 'WLD',
-                'full_name': 'Worldcoin'
+                'symbol': 'AGIX',
+                'full_name': 'SingularityNET'
             },
         ]
 
@@ -80,10 +80,19 @@ class MarketDataAnalyser:
 
 
 def main():
-    # mexc_exchange_api = MexcExchangeAPI("https://api.mexc.com/api/v3", 1000)
-    # mda = MarketDataAnalyser(mexc_exchange_api)
-    gate_exchange_api = GateExchangeAPI("https://api.gateio.ws/api/v4", 1000)
-    mda = MarketDataAnalyser(gate_exchange_api)
+    global cex_api
+    if len(sys.argv) <= 1:
+        print("No argument provided.")
+        return
+    exchange = sys.argv[1]
+    print(exchange)
+    if exchange == 'gate':
+        Settings.EXCHANGE = 'gate'
+        cex_api = GateExchangeAPI("https://api.gateio.ws/api/v4", 1000)
+    elif exchange == 'mexc':
+        Settings.EXCHANGE = 'mexc'
+        cex_api = MexcExchangeAPI("https://api.mexc.com/api/v3", 1000)
+    mda = MarketDataAnalyser(cex_api)
     mda.get_data()
     mda.update_token_info()
 

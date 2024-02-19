@@ -18,7 +18,7 @@ INTERVAL_S_MAP: dict[str, int] = {
 
 
 class GateExchangeAPI(BaseExchangeAPI):
-    def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
+    def __init__(self, base_url, limit=Settings.API_LIMIT):
         super().__init__(base_url, limit)
 
     def get_token_full_name(self):
