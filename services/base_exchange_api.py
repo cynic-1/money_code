@@ -19,7 +19,7 @@ INTERVAL_MS_MAP: dict[str, int] = {
 
 
 class BaseExchangeAPI:
-    def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
+    def __init__(self, base_url, limit):
         self.base_url = base_url
         self.limit = limit
         self.session = requests.Session()

@@ -1,21 +1,32 @@
 import pandas
 
 from utils.logger import Logger
-from services.exchange_api import ExchangeAPI
+from services.mexc_exchange_api import MexcExchangeAPI
+from services.gate_exchange_api import GateExchangeAPI
 from services.ema_caculator import EmaCaculator
 from db.database import Database
 from config.settings import Settings
-from utils.timestamp import get_current_hour_timestamp_ms
+from utils.timestamp import get_current_hour_timestamp_s
 
 
 class MarketDataAnalyser:
-    def __init__(self, base=Settings.DEFAULT_BASE):
+    def __init__(self, exchange_api, base=Settings.DEFAULT_BASE):
         self.base = base
         self.logger = Logger.get_logger()
-        self.exchange_api = ExchangeAPI()
+        self.exchange_api = exchange_api
         self.ema_caculator = EmaCaculator(exchangeAPI=self.exchange_api)
         self.database = Database()
-        self.token_info = self.exchange_api.get_token_full_name()
+        # self.token_info = self.exchange_api.get_token_full_name()
+        self.token_info = [
+            {
+                'symbol': 'ETH',
+                'full_name': 'Ethereum'
+            },
+            {
+                'symbol': 'WLD',
+                'full_name': 'Worldcoin'
+            },
+        ]
 
     def update_token_info(self):
         def _get_latest_time(row, db):
@@ -32,7 +43,7 @@ class MarketDataAnalyser:
         self.database.write_to_token_info(df)
 
     def get_data(self):
-        cur = get_current_hour_timestamp_ms()
+        cur = get_current_hour_timestamp_s()
         for ti in self.token_info:
             token = ti['symbol']
             last_ema = self.database.get_latest_data_by_symbol(token, 1)
@@ -69,8 +80,11 @@ class MarketDataAnalyser:
 
 
 def main():
-    mda = MarketDataAnalyser()
-    # mda.get_data()
+    # mexc_exchange_api = MexcExchangeAPI("https://api.mexc.com/api/v3", 1000)
+    # mda = MarketDataAnalyser(mexc_exchange_api)
+    gate_exchange_api = GateExchangeAPI("https://api.gateio.ws/api/v4", 1000)
+    mda = MarketDataAnalyser(gate_exchange_api)
+    mda.get_data()
     mda.update_token_info()
 
 

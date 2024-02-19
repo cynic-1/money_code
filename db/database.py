@@ -86,6 +86,7 @@ class Database:
                     with open('out.csv', 'r') as f:
                         cur.copy_from(f, "prices_8h", sep=',')
                     conn.commit()
+                    Logger.get_logger().info("Write to Database.")
                 except psycopg2.DatabaseError as e:
                     Logger.get_logger().error(f"An error occurred: {e}")
 

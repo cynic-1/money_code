@@ -1,5 +1,5 @@
 from typing import Optional, Dict
-from base_exchange_api import BaseExchangeAPI
+from services.base_exchange_api import BaseExchangeAPI
 from config.settings import Settings
 from pandas import DataFrame
 from utils.timestamp import get_current_hour_timestamp_s
@@ -18,6 +18,9 @@ INTERVAL_S_MAP: dict[str, int] = {
 
 
 class GateExchangeAPI(BaseExchangeAPI):
+    def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
+        super().__init__(base_url, limit)
+
     def get_token_full_name(self):
         response = self.session.get('https://data.gateapi.io/api2/1/marketlist')
         response.raise_for_status()
@@ -64,7 +67,7 @@ class GateExchangeAPI(BaseExchangeAPI):
                 end = start
                 if n_entries < limit:
                     break
-                time.sleep(0.2)
+                time.sleep(0.01)
             except HTTPError as http_err:
                 print(f"An error occurred: {http_err}")
                 return None
