@@ -27,13 +27,13 @@ class BaseExchangeAPI:
     def get_token_full_name(self):
         raise NotImplementedError("Subclasses must implement this method")
 
-    def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
-                          limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL
+    def get_candle_sticks(self, symbol: str, start: str, end: str, base: str,
+                          limit: int, interval: str
                           ):
         raise NotImplementedError("Subclasses must implement this method")
 
-    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
+    def init_history_price(self, symbol: str, max_entries: int, limit: int, interval: str) -> Optional[DataFrame]:
         raise NotImplementedError("Subclasses must implement this method")
 
-    def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL):
+    def get_history_price(self, symbol: str, last_time, end_time, limit: int, interval: str):
         raise NotImplementedError("Subclasses must implement this method")

@@ -53,7 +53,8 @@ class GateExchangeAPI(BaseExchangeAPI):
         response.raise_for_status()
         return response.json()
 
-    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT,
+    # max_entries_k: 最多获取最近的多少条记录，主要用于数据过多的情况，一般来讲，2k条 8h已经为2年，足够分析
+    def init_history_price(self, symbol: str, max_entries: int = 2000,  limit: int = Settings.API_LIMIT,
                            interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
         end = get_current_hour_timestamp_s()
@@ -66,6 +67,8 @@ class GateExchangeAPI(BaseExchangeAPI):
                 candle_sticks += tmp
                 end = start
                 if n_entries < limit:
+                    break
+                if len(candle_sticks) >= max_entries:
                     break
                 time.sleep(0.01)
             except HTTPError as http_err:
