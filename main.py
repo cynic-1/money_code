@@ -16,17 +16,17 @@ class MarketDataAnalyser:
         self.exchange_api = exchange_api
         self.ema_caculator = EmaCaculator(exchangeAPI=self.exchange_api)
         self.database = Database()
-        # self.token_info = self.exchange_api.get_token_full_name()
-        self.token_info = [
-            {
-                'symbol': 'NADA',
-                'full_name': 'NADA Protocol Token'
-            },
-            {
-                'symbol': 'AGIX',
-                'full_name': 'SingularityNET'
-            },
-        ]
+        self.token_info = self.exchange_api.get_token_full_name()
+        # self.token_info = [
+        #     {
+        #         'symbol': 'NADA',
+        #         'full_name': 'NADA Protocol Token'
+        #     },
+        #     {
+        #         'symbol': 'AGIX',
+        #         'full_name': 'SingularityNET'
+        #     },
+        # ]
 
     def update_token_info(self):
         def _get_latest_time(row, db):
