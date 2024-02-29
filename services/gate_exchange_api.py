@@ -21,6 +21,9 @@ class GateExchangeAPI(BaseExchangeAPI):
     def __init__(self, base_url, limit=Settings.API_LIMIT):
         super().__init__(base_url, limit)
 
+    def get_local_time(self):
+        return get_current_hour_timestamp_s()
+
     def get_token_full_name(self):
         response = self.session.get('https://data.gateapi.io/api2/1/marketlist')
         response.raise_for_status()

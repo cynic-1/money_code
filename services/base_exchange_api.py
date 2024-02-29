@@ -24,6 +24,9 @@ class BaseExchangeAPI:
         self.limit = limit
         self.session = requests.Session()
 
+    def get_local_time(self):
+        raise NotImplementedError("Subclasses must implement this method")
+
     def get_token_full_name(self):
         raise NotImplementedError("Subclasses must implement this method")
 

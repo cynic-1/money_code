@@ -43,7 +43,8 @@ class MarketDataAnalyser:
         self.database.write_to_token_info(df)
 
     def get_data(self):
-        cur = get_current_hour_timestamp_s()
+        cur = self.exchange_api.get_local_time()
+
         for ti in self.token_info:
             token = ti['symbol']
             last_ema = self.database.get_latest_data_by_symbol(token, 1)

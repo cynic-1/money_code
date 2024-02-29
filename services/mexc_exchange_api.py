@@ -23,6 +23,9 @@ class MexcExchangeAPI(BaseExchangeAPI):
     def __init__(self, base_url, limit=Settings.API_LIMIT):
         super().__init__(base_url, limit)
 
+    def get_local_time(self):
+        return get_current_hour_timestamp_ms()
+
     # Deprecated for now
     def get_token_list(self):
         response = self.session.get(self.base_url + '/defaultSymbols')
