@@ -85,6 +85,7 @@ class GateExchangeAPI(BaseExchangeAPI):
     def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT,
                           interval: str = Settings.DEFAULT_INTERVAL):
         if end_time - last_time < INTERVAL_S_MAP[interval]:
+            Logger.get_logger().info(f"{symbol} already the latest data")
             return None
 
         candle_sticks = []
