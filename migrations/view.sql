@@ -14,6 +14,18 @@ CREATE OR REPLACE view api.mexc_top_tokens_vs_btc as
     ORDER BY btc_ema_12/btc_ema_144 DESC;
 grant SELECT on api.mexc_top_tokens_vs_btc to prices_api;
 
+CREATE OR REPLACE view api.gate_top_tokens_vs_btc as 
+    select * from token_info 
+    INNER join prices_8h 
+    on token_info.symbol = prices_8h.symbol
+        AND token_info.exchange = prices_8h.exchange
+        AND token_info.latest_timestamp = prices_8h.timestamp
+    where token_info.exchange='gate'
+        and prices_8h.btc_ema_12 > prices_8h.btc_ema_144 and prices_8h.btc_ema_12 > prices_8h.btc_ema_169
+        and prices_8h.btc_ema_144 > prices_8h.btc_ema_576 and prices_8h.btc_ema_169 > prices_8h.btc_ema_676  
+    and prices_8h.count > 676;
+grant SELECT on api.mexc_top_tokens_vs_btc to prices_api;
+
 CREATE OR REPLACE view api.mexc_top_tokens_from_atl as 
     WITH latest_prices as (
         select symbol, vbtc from prices_8h
