@@ -41,23 +41,38 @@ def pair2token(data: list):
 
 def list2symbol_fullname(data: list):
     res = []
+    seen = set()  # 创建一个空集合用来存储已经看到的元素
     for symbol_map in data:
-        res.append(
-            {
-                'symbol': symbol_map['baseAsset'],
-                'full_name': symbol_map['fullName']
-            }
-        )
-    return res
+        # 创建一个元组，包含我们想要去重的字段
+        identifier = (symbol_map['baseAsset'], symbol_map['fullName'])
 
+        # 检查这个元组是否已经在集合中
+        if identifier not in seen:
+            res.append(
+                {
+                    'symbol': symbol_map['baseAsset'],
+                    'full_name': symbol_map['fullName']
+                }
+            )
+            seen.add(identifier)  # 将这个元组加入到集合中，以便记录这个元素已经见过
+
+    return res
 
 def gate_list2symbol_fullname(data: list):
     res = []
+    seen = set()  # 创建一个空集合用来存储已经看到的元素
     for symbol_map in data:
-        res.append(
-            {
-                'symbol': symbol_map['baseAsset'],
-                'full_name': symbol_map['fullName']
-            }
-        )
+        # 创建一个元组，包含我们想要去重的字段
+        identifier = (symbol_map['symbol'], symbol_map['name'])
+
+        # 检查这个元组是否已经在集合中
+        if identifier not in seen:
+            res.append(
+                {
+                    'symbol': symbol_map['symbol'],
+                    'full_name': symbol_map['name']
+                }
+            )
+            seen.add(identifier)  # 将这个元组加入到集合中，以便记录这个元素已经见过
+
     return res

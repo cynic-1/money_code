@@ -41,6 +41,7 @@ class MexcExchangeAPI(BaseExchangeAPI):
         Logger.get_logger().info('Get token fullname.')
         return list2symbol_fullname(data)
 
+    # [from, to)
     def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
                           limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL
                           ):
@@ -58,7 +59,8 @@ class MexcExchangeAPI(BaseExchangeAPI):
 
     def init_history_price(self, symbol: str, max_entries: int = 2000, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
-        end = get_current_hour_timestamp_ms()
+        # 确保获取最新数据 [最早数据, end]
+        end = get_current_hour_timestamp_ms()+INTERVAL_MS_MAP[interval]
 
         while True:
             start = end - limit * INTERVAL_MS_MAP[interval]
@@ -89,20 +91,18 @@ class MexcExchangeAPI(BaseExchangeAPI):
             return None
 
         candle_sticks = []
-        # 加一个小的偏移量是为了避免获得重复数据。
-        end = end_time+10000
+        # 加一个小的偏移量是为了避免获得重复数据。(last_time, end_time] => [last_time+interval, end_time+interval)
+        end = end_time+INTERVAL_MS_MAP[interval]
+        start = last_time+INTERVAL_MS_MAP[interval]
 
-        while True:
-            start = end - limit * INTERVAL_MS_MAP[interval]
-            if start < last_time:
-                start = last_time
-            if end <= start:
-                break
+        while start < end:
+            tmp_end = min(start+limit*INTERVAL_MS_MAP[interval], end)
             try:
-                tmp = self.get_candle_sticks(symbol, start=start, end=end)
+                tmp = self.get_candle_sticks(symbol, start=start, end=tmp_end)
                 candle_sticks += tmp
-                end = start
-                time.sleep(0.2)
+                start = tmp_end
+
+                time.sleep(0.05)
             except HTTPError as http_err:
                 print(f"An error occurred: {http_err}")
                 return None
