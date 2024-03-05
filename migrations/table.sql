@@ -20,10 +20,11 @@ CREATE TABLE IF NOT EXISTS prices_8h
         btc_ema_144           NUMERIC,
         btc_ema_169           NUMERIC,
         btc_ema_576           NUMERIC,
-        btc_ema_676           NUMERIC
+        btc_ema_676           NUMERIC,
+        count                 INT                            NOT NULL,
     CONSTRAINT unique_symbol_exchange_timestamp UNIQUE (exchange, symbol, timestamp)
     );
-    CREATE UNIQUE INDEX IF NOT EXISTS ex_time_symbol ON prices_8h (exchange, timestamp, symbol);
+    CREATE UNIQUE INDEX IF NOT EXISTS exchange_time_symbol ON prices_8h (exchange, timestamp, symbol);
 
     CREATE TABLE IF NOT EXISTS token_info
     (
