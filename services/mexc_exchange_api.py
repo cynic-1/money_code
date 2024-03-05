@@ -1,13 +1,14 @@
 from typing import Optional, Dict
 
-import requests
 from config.settings import Settings
 from pandas import DataFrame
-from utils.timestamp import get_current_hour_timestamp
-from utils.transform import list2df_kline, pair2token
+from utils.timestamp import get_current_hour_timestamp_ms
+from utils.transform import list2df_kline, pair2token, list2symbol_fullname
 import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
+
+from services.base_exchange_api import BaseExchangeAPI
 
 INTERVAL_MS_MAP: dict[str, int] = {
     '8h': 8 * 3600 * 1000,
@@ -18,18 +19,27 @@ INTERVAL_MS_MAP: dict[str, int] = {
 }
 
 
-class ExchangeAPI:
-    def __init__(self, base_url=Settings.API_URL, limit=Settings.API_LIMIT):
-        self.base_url = base_url
-        self.limit = limit
-        self.session = requests.Session()
+class MexcExchangeAPI(BaseExchangeAPI):
+    def __init__(self, base_url, limit=Settings.API_LIMIT):
+        super().__init__(base_url, limit)
 
+    def get_local_time(self):
+        return get_current_hour_timestamp_ms()
+
+    # Deprecated for now
     def get_token_list(self):
         response = self.session.get(self.base_url + '/defaultSymbols')
         response.raise_for_status()
         data = response.json()['data']
         Logger.get_logger().info('Get all token list.')
         return pair2token(data)
+
+    def get_token_full_name(self):
+        response = self.session.get(self.base_url + '/exchangeInfo')
+        response.raise_for_status()
+        data = response.json()['symbols']
+        Logger.get_logger().info('Get token fullname.')
+        return list2symbol_fullname(data)
 
     def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
                           limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL
@@ -46,9 +56,9 @@ class ExchangeAPI:
         response.raise_for_status()
         return response.json()
 
-    def init_history_price(self, symbol: str, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
+    def init_history_price(self, symbol: str, max_entries: int = 2000, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
-        end = get_current_hour_timestamp()
+        end = get_current_hour_timestamp_ms()
 
         while True:
             start = end - limit * INTERVAL_MS_MAP[interval]
@@ -58,6 +68,8 @@ class ExchangeAPI:
                 candle_sticks += tmp
                 end = start
                 if n_entries < limit:
+                    break
+                if len(candle_sticks) >= max_entries:
                     break
                 time.sleep(0.2)
             except HTTPError as http_err:
@@ -73,10 +85,12 @@ class ExchangeAPI:
 
     def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL):
         if end_time - last_time < INTERVAL_MS_MAP[interval]:
+            Logger.get_logger().info(f"{symbol} already the latest data")
             return None
 
         candle_sticks = []
-        end = end_time
+        # 加一个小的偏移量是为了避免获得重复数据。
+        end = end_time+10000
 
         while True:
             start = end - limit * INTERVAL_MS_MAP[interval]

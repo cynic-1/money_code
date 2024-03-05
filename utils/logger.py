@@ -6,5 +6,5 @@ class Logger:
 
     @staticmethod
     def get_logger(name=__name__, level=logging.DEBUG):
-        logging.basicConfig(level=level, filename='mexc.log', format=Logger.log_format)
+        logging.basicConfig(level=level, filename='cex.log', format=Logger.log_format, encoding='utf-8')
         return logging.getLogger(name)

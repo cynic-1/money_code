@@ -42,5 +42,6 @@ $ vim config/config.ini
 
 $ pip install -r requirements.txt
 
-$ python3 main.py
+$ python3 main.py "exchange_name"
+e.g. python3 main.py gate
 ```
