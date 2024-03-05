@@ -45,3 +45,11 @@ $ pip install -r requirements.txt
 $ python3 main.py "exchange_name"
 e.g. python3 main.py gate
 ```
+
+## api
+
+### gate top coins vs BTC
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/gate_top_tokens_vs_btc
+
+### mexc top coins vs BTC
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/gate_top_tokens_vs_btc
