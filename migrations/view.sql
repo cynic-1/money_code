@@ -140,3 +140,41 @@ CREATE OR REPLACE view api.mexc_top_tokens_from_ath as
     ORDER BY latest_vbtc.vbtc/max_vbtc.max_vbtc DESC
     LIMIT 100;
 grant SELECT on api.mexc_top_tokens_from_ath to prices_api;
+
+CREATE OR REPLACE view api.all_time_high_usd as
+    SELECT distinct on (lower(full_name)) *
+    FROM (
+    select token_info.symbol, token_info.exchange, token_info.full_name, prices_8h.timestamp, prices_8h.open, prices_8h.high, prices_8h.low, prices_8h.close, prices_8h.vbtc, 
+    prices_8h.usd_ema_12, prices_8h.usd_ema_144, prices_8h.usd_ema_169,prices_8h.usd_ema_576, prices_8h.usd_ema_676, prices_8h.btc_ema_12, prices_8h.btc_ema_144, prices_8h.btc_ema_169, prices_8h.btc_ema_576,
+    prices_8h.count    
+    from token_info 
+    INNER join prices_8h 
+    on token_info.symbol = prices_8h.symbol
+        AND token_info.exchange = prices_8h.exchange
+        AND token_info.latest_timestamp = prices_8h.timestamp
+    INNER JOIN 
+    (select exchange, symbol, max(usd_ema_12) as max_usd_ema_12 from prices_8h group by exchange, symbol) as max_pair_usd
+    on prices_8h.symbol = max_pair_usd.symbol AND prices_8h.exchange = max_pair_usd.exchange AND prices_8h.usd_ema_12 = max_pair_usd.max_usd_ema_12) as max_pairs
+    WHERE count > 12
+        AND symbol NOT LIKE '%3L'
+        and symbol NOT LIKE '%5L';
+grant SELECT on api.all_time_high_usd to prices_api;
+
+CREATE OR REPLACE view api.all_time_high_btc as
+    SELECT distinct on (lower(full_name)) *
+    FROM (
+    select token_info.symbol, token_info.exchange, token_info.full_name, prices_8h.timestamp, prices_8h.open, prices_8h.high, prices_8h.low, prices_8h.close, prices_8h.vbtc, 
+    prices_8h.usd_ema_12, prices_8h.usd_ema_144, prices_8h.usd_ema_169,prices_8h.usd_ema_576, prices_8h.usd_ema_676, prices_8h.btc_ema_12, prices_8h.btc_ema_144, prices_8h.btc_ema_169, prices_8h.btc_ema_576,
+    prices_8h.count    
+    from token_info 
+    INNER join prices_8h 
+    on token_info.symbol = prices_8h.symbol
+        AND token_info.exchange = prices_8h.exchange
+        AND token_info.latest_timestamp = prices_8h.timestamp
+    INNER JOIN 
+    (select exchange, symbol, max(btc_ema_12) as max_btc_ema_12 from prices_8h group by exchange, symbol) as max_pair_usd
+    on prices_8h.symbol = max_pair_usd.symbol AND prices_8h.exchange = max_pair_usd.exchange AND prices_8h.btc_ema_12 = max_pair_usd.max_btc_ema_12) as max_pairs
+    WHERE count > 12
+        AND symbol NOT LIKE '%3L'
+        and symbol NOT LIKE '%5L';
+grant SELECT on api.all_time_high_btc to prices_api;

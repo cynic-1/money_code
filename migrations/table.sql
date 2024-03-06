@@ -1,7 +1,7 @@
 CREATE USER cypher WITH PASSWORD 'qwer1234';
 ALTER USER cypher WITH SUPERUSER;
 
-CREATE TABLE IF NOT EXISTS prices_8h_dup
+CREATE TABLE IF NOT EXISTS prices_8h
     (
         symbol                TEXT                            NOT NULL,
         exchange              TEXT                            NOT NULL,
@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS prices_8h_dup
         count                 INT                            NOT NULL,
     CONSTRAINT unique_symbol_exchange_timestamp UNIQUE (exchange, symbol, timestamp)
     );
-    CREATE UNIQUE INDEX IF NOT EXISTS exchange_time_symbol ON prices_8h_dup (exchange, timestamp, symbol);
+    CREATE UNIQUE INDEX IF NOT EXISTS exchange_time_symbol ON prices_8h (exchange, timestamp, symbol);
 
 CREATE TABLE IF NOT EXISTS token_info
 (

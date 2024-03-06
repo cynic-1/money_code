@@ -52,7 +52,16 @@ e.g. python3 main.py gate
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/gate_top_tokens_vs_btc
 
 ### mexc top coins vs BTC
-http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/gate_top_tokens_vs_btc
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/mexc_top_tokens_vs_btc
 
 ### top coins vs BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/top_tokens_vs_btc
+
+### bottom coins vs BTC
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/bottom_tokens_vs_btc
+
+### ATH USD
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_usd
+
+### ATH BTC
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc
