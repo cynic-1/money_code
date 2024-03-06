@@ -88,7 +88,7 @@ class GateExchangeAPI(BaseExchangeAPI):
         end = end_time
         start = last_time + INTERVAL_S_MAP[interval]
 
-        while start < end:
+        while start <= end:
             tmp_end = min(start+limit*INTERVAL_S_MAP[interval], end)
             try:
                 tmp = self.get_candle_sticks(symbol, start=start, end=tmp_end)
