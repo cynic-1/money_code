@@ -65,3 +65,9 @@ http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_hig
 
 ### ATH BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc
+
+### RECENT HIGH BTC
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_btc
+
+### RECENT HIGH USD
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_usd
