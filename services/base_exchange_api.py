@@ -1,14 +1,3 @@
-from typing import Optional, Dict
-
-import requests
-from config.settings import Settings
-from pandas import DataFrame
-from utils.timestamp import get_current_hour_timestamp_ms
-from utils.transform import list2df_kline, pair2token, list2symbol_fullname
-import time
-from utils.logger import Logger
-from requests.exceptions import HTTPError
-
 INTERVAL_MS_MAP: dict[str, int] = {
     '8h': 8 * 3600 * 1000,
     '4h': 4 * 3600 * 1000,

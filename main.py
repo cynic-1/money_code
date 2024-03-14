@@ -6,7 +6,6 @@ from services.gate_exchange_api import GateExchangeAPI
 from services.ema_caculator import EmaCaculator
 from db.database import Database
 from config.settings import Settings
-from utils.timestamp import get_current_hour_timestamp_s
 
 
 class MarketDataAnalyser:
