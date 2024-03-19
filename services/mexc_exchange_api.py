@@ -3,7 +3,7 @@ from typing import Optional, Dict
 from config.settings import Settings
 from pandas import DataFrame
 from utils.timestamp import get_current_hour_timestamp_ms
-from utils.transform import list2df_kline, pair2token, list2symbol_fullname
+from utils.transform import mexc_list2df_kline, pair2token, list2symbol_fullname
 import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
@@ -83,9 +83,12 @@ class MexcExchangeAPI(BaseExchangeAPI):
 
         if not candle_sticks:
             return None
-        return list2df_kline(candle_sticks)
+        # 时间戳单位统一至s对外提供
+        return mexc_list2df_kline(candle_sticks)
 
     def get_history_price(self, symbol: str, last_time, end_time, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL):
+        # 数据库统一至s，处理时先换为ms
+        last_time = last_time*1000
         if end_time - last_time < INTERVAL_MS_MAP[interval]:
             Logger.get_logger().info(f"{symbol} already the latest data")
             return None
@@ -113,4 +116,4 @@ class MexcExchangeAPI(BaseExchangeAPI):
         if len(candle_sticks) == 0:
             return None
         else:
-            return list2df_kline(candle_sticks)
+            return mexc_list2df_kline(candle_sticks)

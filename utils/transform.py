@@ -1,10 +1,11 @@
 from pandas import DataFrame
 
 
-def list2df_kline(data: list):
+def mexc_list2df_kline(data: list):
     df = DataFrame(data)
     df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'turnover']
     df.drop(['volume', 'close_time', 'turnover'], axis=1, inplace=True)
+    df['timestamp'] = df['timestamp']/1000
     df.set_index('timestamp', inplace=True)
     df.sort_index(inplace=True)
     df['open'] = df['open'].astype('float64')
