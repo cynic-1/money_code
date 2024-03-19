@@ -50,26 +50,65 @@ e.g. python3 main.py gate
 ### document
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/
 
-### gate top coins vs BTC
-http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/gate_top_tokens_vs_btc
-
-### mexc top coins vs BTC
-http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/mexc_top_tokens_vs_btc
-
 ### top coins vs BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/top_tokens_vs_btc
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/top_tokens_vs_btc?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/top_tokens_vs_btc?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/top_tokens_vs_btc?cmc_rank=lte.500
 
 ### bottom coins vs BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/bottom_tokens_vs_btc
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/bottom_tokens_vs_btc?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/bottom_tokens_vs_btc?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/bottom_tokens_vs_btc?cmc_rank=lte.500
 
 ### ATH USD
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_usd
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_usd?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_usd?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_usd?cmc_rank=lte.500
 
 ### ATH BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/all_time_high_btc?cmc_rank=lte.500
 
 ### RECENT HIGH BTC
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_btc
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_btc?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_btc?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_btc?cmc_rank=lte.500
 
 ### RECENT HIGH USD
 http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_usd
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_usd?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_usd?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/recent_high_usd?cmc_rank=lte.500
+
+### least retraced 1 year
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/least_retraced_usd
+#### top 100
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/least_retraced_usd?cmc_rank=lte.100
+#### top 200
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/least_retraced_usd?cmc_rank=lte.200
+#### top 500
+http://ec2-13-210-227-179.ap-southeast-2.compute.amazonaws.com:3000/least_retraced_usd?cmc_rank=lte.500

@@ -58,3 +58,4 @@ CREATE TABLE IF NOT EXISTS cmc
         quote                               JSON
 
     );
+    CREATE INDEX IF NOT EXISTS cmc_symbol ON cmc (symbol);
