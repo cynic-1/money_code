@@ -184,26 +184,26 @@ class Database:
     (
         id                    BIGINT                          NOT NULL,
         name                  TEXT                            NOT NULL,
-        symbol                TEXT                            PRIMARY KEY, 
-        slug                  BIGINT                          NOT NULL,
+        symbol                TEXT                            PRIMARY KEY,
+        slug                  TEXT                          NOT NULL,
         num_market_pairs      INT,
         date_added            TEXT,
         tags                  TEXT,
-        max_supply            BIGINT,
-        circulating_supply    BIGINT,
-        total_supply          BIGINT,
+        max_supply            NUMERIC,
+        circulating_supply    NUMERIC,
+        total_supply          NUMERIC,
         platform              JSON,
         is_market_cap_included_in_calc  INT,
         infinite_supply       BOOLEAN,
         cmc_rank              INT,
-        self_reported_circulating_supply    BIGINT,
+        self_reported_circulating_supply    NUMERIC,
         self_reported_market_cap            NUMERIC,
         tvl_ratio                           NUMERIC,
         last_updated                        TIMESTAMP,
         quote                               JSON
 
     );
-        CREATE INDEX IF NOT EXISTS symbol_index ON cmc (symbol);
+    CREATE INDEX IF NOT EXISTS symbol_index ON cmc (symbol);
         '''
 
         with self._connect() as conn:
