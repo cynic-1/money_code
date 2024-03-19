@@ -6,7 +6,7 @@ from services.gate_exchange_api import GateExchangeAPI
 from services.ema_caculator import EmaCaculator
 from db.database import Database
 from config.settings import Settings
-from services.cmc_api import get_market_data
+
 
 class MarketDataAnalyser:
     def __init__(self, exchange_api, base=Settings.DEFAULT_BASE):
@@ -41,10 +41,10 @@ class MarketDataAnalyser:
         df['exchange'] = Settings.EXCHANGE
         self.database.write_to_token_info(df)
 
-    def update_cmc_data(self):
-        market_data = get_market_data()
-        data = pandas.DataFrame(market_data['data'])
-        self.database.write_to_cmc(data)
+    # def update_cmc_data(self):
+    #     market_data = get_market_data()
+    #     data = pandas.DataFrame(market_data['data'])
+    #     self.database.write_to_cmc(data)
 
     def get_data(self):
         cur = self.exchange_api.get_local_time()
@@ -60,7 +60,7 @@ class MarketDataAnalyser:
                     continue
                 prices = self.ema_caculator.calculate_all_ema(prices)
 
-                prices['count'] = list(range(1, len(prices)+1))
+                prices['count'] = list(range(1, len(prices) + 1))
 
                 self.database.commit_to_write_cache(prices, symbol=token)
 
@@ -76,7 +76,7 @@ class MarketDataAnalyser:
                     continue
                 prices = self.ema_caculator.update_ema(prices, ema=last_ema)
 
-                prices['count'] = list(range(last_ema[-1]+1, len(prices)+last_ema[-1]+1))
+                prices['count'] = list(range(last_ema[-1] + 1, len(prices) + last_ema[-1] + 1))
 
                 self.database.commit_to_write_cache(prices, symbol=token)
 
@@ -100,7 +100,6 @@ def main():
     mda = MarketDataAnalyser(cex_api)
     mda.get_data()
     mda.update_token_info()
-    mda.update_cmc_data()
 
 
 if __name__ == '__main__':
