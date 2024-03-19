@@ -1,3 +1,7 @@
+from typing import Optional
+import requests
+from pandas import DataFrame
+
 INTERVAL_MS_MAP: dict[str, int] = {
     '8h': 8 * 3600 * 1000,
     '4h': 4 * 3600 * 1000,
