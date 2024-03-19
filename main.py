@@ -98,8 +98,8 @@ def main():
         Settings.EXCHANGE = 'mexc'
         cex_api = MexcExchangeAPI("https://api.mexc.com/api/v3", 1000)
     mda = MarketDataAnalyser(cex_api)
-    # mda.get_data()
-    # mda.update_token_info()
+    mda.get_data()
+    mda.update_token_info()
     mda.update_cmc_data()
 
 
