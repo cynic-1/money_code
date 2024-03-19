@@ -21,9 +21,9 @@ class Database:
             'port': config['database']['port']
         }
         self.cache = []
-        self.create_table()
-        self.create_token_info_table()
-        self.create_cmc_table()
+        # self.create_table()
+        # self.create_token_info_table()
+        # self.create_cmc_table()
 
     def _connect(self):
         return psycopg2.connect(**self.connection_params)
