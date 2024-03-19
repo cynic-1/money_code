@@ -228,8 +228,6 @@ class Database:
         insert_query = f"""
             INSERT INTO cmc ({columns_str})
             VALUES ({placeholders})
-            ON CONFLICT (symbol) DO UPDATE SET 
-            {update_columns_str}
         """
 
         conn = self._connect()
