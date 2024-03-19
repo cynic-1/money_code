@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS token_info
 
 CREATE TABLE IF NOT EXISTS cmc
     (
-        id                    BIGINT                          NOT NULL,
-        name                  TEXT                            PRIMARY KEY,
+        id                    BIGINT                          PRIMARY KEY,
+        name                  TEXT                            NOT NULL,
         symbol                TEXT                            NOT NULL,
         slug                  TEXT                            NOT NULL,
         num_market_pairs      INT,
