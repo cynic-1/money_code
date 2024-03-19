@@ -34,3 +34,28 @@ CREATE TABLE IF NOT EXISTS token_info
     latest_timestamp      BIGINT                          NOT NULL,
     CONSTRAINT unique_symbol_exchange UNIQUE (symbol, exchange)
 );
+
+CREATE TABLE IF NOT EXISTS cmc
+    (
+        id                    BIGINT                          NOT NULL,
+        name                  TEXT                            NOT NULL,
+        symbol                TEXT                            PRIMARY KEY,
+        slug                  TEXT                          NOT NULL,
+        num_market_pairs      INT,
+        date_added            TEXT,
+        tags                  TEXT,
+        max_supply            NUMERIC,
+        circulating_supply    NUMERIC,
+        total_supply          NUMERIC,
+        platform              JSON,
+        is_market_cap_included_in_calc  INT,
+        infinite_supply       BOOLEAN,
+        cmc_rank              INT,
+        self_reported_circulating_supply    NUMERIC,
+        self_reported_market_cap            NUMERIC,
+        tvl_ratio                           NUMERIC,
+        last_updated                        TIMESTAMP,
+        quote                               JSON
+
+    );
+CREATE INDEX IF NOT EXISTS symbol_index ON cmc (symbol);
