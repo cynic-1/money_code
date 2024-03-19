@@ -1,3 +1,5 @@
+import json
+
 import psycopg2
 import configparser
 from io import StringIO
@@ -21,6 +23,7 @@ class Database:
         self.cache = []
         self.create_table()
         self.create_token_info_table()
+        self.create_cmc_table()
 
     def _connect(self):
         return psycopg2.connect(**self.connection_params)
@@ -134,8 +137,8 @@ class Database:
         latest_timestamp      BIGINT                          NOT NULL,
         CONSTRAINT unique_symbol_exchange UNIQUE (symbol, exchange)
     );
-        CREATE INDEX IF NOT EXISTS symbol_ex ON prices_8h (symbol, exchange);
-        CREATE INDEX IF NOT EXISTS ex_symbol on prices_8h (exchange, symbol);
+        CREATE INDEX IF NOT EXISTS symbol_ex ON token_info (symbol, exchange);
+        CREATE INDEX IF NOT EXISTS ex_symbol on token_info (exchange, symbol);
         '''
 
         with self._connect() as conn:
@@ -171,6 +174,72 @@ class Database:
                 return
         conn.commit()
         Logger.get_logger().info("Update token info.")
+
+        cur.close()
+        conn.close()
+
+    def create_cmc_table(self):
+        create_table_query = f'''
+            CREATE TABLE IF NOT EXISTS cmc
+    (
+        id                    BIGINT                          NOT NULL,
+        name                  TEXT                            NOT NULL,
+        symbol                TEXT                            PRIMARY KEY, 
+        slug                  BIGINT                          NOT NULL,
+        num_market_pairs      INT,
+        date_added            TEXT,
+        tags                  TEXT,
+        max_supply            BIGINT,
+        circulating_supply    BIGINT,
+        total_supply          BIGINT,
+        platform              JSON,
+        is_market_cap_included_in_calc  INT,
+        infinite_supply       BOOLEAN,
+        cmc_rank              INT,
+        self_reported_circulating_supply    BIGINT,
+        self_reported_market_cap            NUMERIC,
+        tvl_ratio                           NUMERIC,
+        last_updated                        TIMESTAMP,
+        quote                               JSON
+
+    );
+        CREATE INDEX IF NOT EXISTS symbol_index ON cmc (symbol);
+        '''
+
+        with self._connect() as conn:
+            with conn.cursor() as cur:
+                try:
+                    cur.execute(create_table_query)
+                    conn.commit()
+                    Logger.get_logger().info('Create cmc Table.')
+                except psycopg2.DatabaseError as e:
+                    Logger.get_logger().error(f"CREATE cmc TABLE: {e}")
+
+    def write_to_cmc(self, data):
+        columns = data.columns.tolist()
+        columns_str = ', '.join(columns)
+        placeholders = ", ".join(["%s"] * len(columns))
+        update_columns = [f"{col} = EXCLUDED.{col}" for col in columns if col != 'symbol']
+        update_columns_str = ", ".join(update_columns)  # 更新时的列赋值字符串
+
+        data['platform'] = data['platform'].apply(json.dumps)
+        data['quote'] = data['quote'].apply(json.dumps)
+
+        insert_query = f"""
+            INSERT INTO cmc ({columns_str})
+            VALUES ({placeholders})
+            ON CONFLICT (symbol) DO UPDATE SET 
+            {update_columns_str}
+        """
+
+        conn = self._connect()
+        cur = conn.cursor()
+
+        data = [tuple(x) for x in data.to_numpy()]
+
+        cur.executemany(insert_query, data)
+        conn.commit()
+        Logger.get_logger().info("Update cmc table.")
 
         cur.close()
         conn.close()
