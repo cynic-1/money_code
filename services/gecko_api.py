@@ -1,5 +1,5 @@
 import requests
-from utils.logger import Logger
+# from utils.logger import Logger
 import time
 
 
@@ -12,7 +12,7 @@ class GeckoAPI:
         response = self.session.get(self.base_url + '/coins/list')
         response.raise_for_status()
         data = response.json()
-        Logger.get_logger().info('Get coingecko coin list.')
+        # Logger.get_logger().info('Get coingecko coin list.')
         return data
 
     def __get_coin_map(self):
