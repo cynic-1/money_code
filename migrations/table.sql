@@ -38,9 +38,9 @@ CREATE TABLE IF NOT EXISTS token_info
 CREATE TABLE IF NOT EXISTS cmc
     (
         id                    BIGINT                          NOT NULL,
-        name                  TEXT                            NOT NULL,
-        symbol                TEXT                            PRIMARY KEY,
-        slug                  TEXT                          NOT NULL,
+        name                  TEXT                            PRIMARY KEY,
+        symbol                TEXT                            NOT NULL,
+        slug                  TEXT                            NOT NULL,
         num_market_pairs      INT,
         date_added            TEXT,
         tags                  TEXT,
@@ -58,4 +58,3 @@ CREATE TABLE IF NOT EXISTS cmc
         quote                               JSON
 
     );
-CREATE INDEX IF NOT EXISTS symbol_index ON cmc (symbol);

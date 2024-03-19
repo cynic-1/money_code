@@ -196,8 +196,9 @@ CREATE OR REPLACE view api.recent_high_btc as
         AND token_info.latest_timestamp = prices_8h.timestamp
     INNER JOIN 
     (select exchange, symbol, max(btc_ema_144) as max_btc_ema_144 from prices_8h group by exchange, symbol) as max_pair_usd
-    on prices_8h.symbol = max_pair_usd.symbol AND prices_8h.exchange = max_pair_usd.exchange 
-        AND prices_8h.btc_ema_144 = max_pair_usd.max_usd_ema_144) as max_pairs
+    on prices_8h.symbol = max_pair_usd.symbol 
+        AND prices_8h.exchange = max_pair_usd.exchange 
+        AND prices_8h.btc_ema_144 = max_pair_usd.max_btc_ema_144) as max_pairs
     WHERE count >= 576
         AND symbol NOT LIKE '%3L'
         and symbol NOT LIKE '%5L') as distinct_max_btc
@@ -232,3 +233,21 @@ CREATE OR REPLACE view api.recent_high_usd as
     ORDER BY usd_ema_144/usd_ema_576
     ASC;
 grant SELECT on api.recent_high_usd to prices_api;
+
+CREATE OR REPLACE view api.least_retraced_usd as
+    SELECT max_prices_1y.symbol, max_prices_1y.exchange, max_prices_1y.max_price_1y, max_prices_1y.close, max_prices_1y.low, 
+            max_prices_1y.full_name, max_prices_1y.close/max_prices_1y.max_price_1y - 1 as percent_retreat
+    FROM (
+        select distinct on (lower(full_name)) token_info.symbol, token_info.exchange, prices_8h.close, prices_8h.low, prices_8h.count, token_info.full_name,
+        (select max(high) from prices_8h 
+        where symbol=token_info.symbol and exchange=token_info.exchange and timestamp<=token_info.latest_timestamp and timestamp >= token_info.latest_timestamp - 3600*24*365) as max_price_1y 
+        from token_info
+        INNER join prices_8h 
+        on token_info.symbol = prices_8h.symbol
+            AND token_info.exchange = prices_8h.exchange
+            AND token_info.latest_timestamp = prices_8h.timestamp) as max_prices_1y
+    WHERE count > 3 * 30
+    AND max_prices_1y.close != max_prices_1y.low AND max_prices_1y.max_price_1y != max_prices_1y.low AND max_prices_1y.max_price_1y != max_prices_1y.close
+    AND symbol NOT LIKE '%3L' and symbol NOT LIKE '%5L' and symbol NOT LIKE '%5S' AND symbol NOT LIKE '%3S'
+    ORDER BY max_prices_1y.close/max_prices_1y.max_price_1y DESC
+    LIMIT 100;
