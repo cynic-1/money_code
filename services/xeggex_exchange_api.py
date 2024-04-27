@@ -33,8 +33,6 @@ class XeggexExchangeAPI(BaseExchangeAPI):
         Logger.get_logger().info('Get token fullname.')
         return xeggex_list2symbol_fullname(data)
 
-    # 有个很搞笑的事情，如果end-start>90 day，会报错；但是实际返回的数据只看end和countBack;
-    # 好像也不看end。。。
     def get_candle_sticks(self, symbol: str, start: str, end: str, base: str = Settings.DEFAULT_BASE,
                           limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL
                           ):
@@ -49,7 +47,6 @@ class XeggexExchangeAPI(BaseExchangeAPI):
         response = self.session.get(self.base_url + '/market/candles', params=params)
         response.raise_for_status()
         return response.json()
-
     def init_history_price(self, symbol: str, max_entries: int = 2000, limit: int = Settings.API_LIMIT, interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
         # 确保获取最新数据 [最早数据, end]
