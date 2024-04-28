@@ -12,7 +12,7 @@ def get_market_data():
     }
     headers = {
         'Accepts': 'application/json',
-        'X-CMC_PRO_API_KEY': 'a854f954-9be5-4b24-8415-fa28f686cff1',
+        'X-CMC_PRO_API_KEY': 'fe572e03-173b-43a8-84ac-4a9b4b2b23b5',
     }
     coins = requests.get(listing_url, params=parameters, headers=headers).json()
     return coins
