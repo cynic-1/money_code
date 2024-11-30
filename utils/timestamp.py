@@ -7,5 +7,5 @@ def get_current_hour_timestamp_ms():
 
 def get_current_hour_timestamp_s():
     timestamp = int(time.time())
-    hour = timestamp // (8*3600) * (8*3600)
+    hour = timestamp // (24*3600) * (24*3600)
     return hour

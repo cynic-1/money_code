@@ -27,6 +27,18 @@ def gate_list2df_kline(data: list):
     df['close'] = df['close'].astype('float64')
     return df
 
+def binance_list2df_kline(data: list):
+    df = DataFrame(data)
+    df.columns = ['timestamp', 'open', 'high', 'low', 'close', 'volume', 'close_time', 'turnover', 'trades', 'taker_base', 'taker_quote', 'ignore']
+    df.drop(['volume', 'close_time', 'turnover', 'trades', 'taker_base', 'taker_quote', 'ignore'], axis=1, inplace=True)
+    df['timestamp'] = df['timestamp'] // 1000
+    df.set_index('timestamp', inplace=True)
+    df.sort_index(inplace=True)
+    df['open'] = df['open'].astype('float64')
+    df['high'] = df['high'].astype('float64')
+    df['low'] = df['low'].astype('float64')
+    df['close'] = df['close'].astype('float64')
+    return df    
 
 def pair2token(data: list):
     token_list = []
@@ -79,6 +91,15 @@ def gate_list2symbol_fullname(data: list):
 
     return res
 
+def binance_list2symbol_fullname(symbol_list: list):
+    result = []
+    for symbol in symbol_list:
+        if symbol['quoteAsset'] == 'USDT':
+            result.append({
+                'symbol': symbol['baseAsset'],
+                'full_name': symbol['baseAsset']
+            })
+    return result
 
 def xeggex_list2symbol_fullname(data: list):
     res = []

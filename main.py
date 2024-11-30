@@ -3,6 +3,7 @@ import sys
 from utils.logger import Logger
 from services.mexc_exchange_api import MexcExchangeAPI
 from services.gate_exchange_api import GateExchangeAPI
+from services.binance_exchange_api import BinanceExchangeAPI
 from services.ema_caculator import EmaCaculator
 from db.database import Database
 from config.settings import Settings
@@ -97,6 +98,9 @@ def main():
     elif exchange == 'mexc':
         Settings.EXCHANGE = 'mexc'
         cex_api = MexcExchangeAPI("https://api.mexc.com/api/v3", 1000)
+    elif exchange == 'binance':
+        Settings.EXCHANGE = 'binance'
+        cex_api = BinanceExchangeAPI("https://api.binance.com/api/v3", 1000)
     mda = MarketDataAnalyser(cex_api)
     mda.get_data()
     mda.update_token_info()

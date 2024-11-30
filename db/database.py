@@ -30,7 +30,7 @@ class Database:
 
     def create_table(self):
         create_table_query = f'''
-            CREATE TABLE IF NOT EXISTS prices_8h
+            CREATE TABLE IF NOT EXISTS prices_1d
     (
         symbol                TEXT                            NOT NULL,
         exchange              TEXT                            NOT NULL,
@@ -40,20 +40,14 @@ class Database:
         low                   NUMERIC                         NOT NULL,
         close                 NUMERIC                         NOT NULL,
         vbtc                  NUMERIC                         NOT NULL,    
-        usd_ema_12            NUMERIC,
-        usd_ema_144           NUMERIC,
-        usd_ema_169           NUMERIC,
-        usd_ema_576           NUMERIC,
-        usd_ema_676           NUMERIC,
-        btc_ema_12            NUMERIC,
-        btc_ema_144           NUMERIC,
-        btc_ema_169           NUMERIC,
-        btc_ema_576           NUMERIC,
-        btc_ema_676           NUMERIC,
+        usd_ema_20            NUMERIC,
+        usd_ema_200           NUMERIC,
+        btc_ema_20            NUMERIC,
+        btc_ema_200           NUMERIC,
         count                 INT                             NOT NULL
     );
-        CREATE INDEX IF NOT EXISTS symbol_time ON prices_8h (timestamp, symbol, exchange);
-        CREATE INDEX IF NOT EXISTS ex_symbol_time on prices_8h (exchange, symbol, timestamp);
+        CREATE INDEX IF NOT EXISTS symbol_time_1d ON prices_1d (timestamp, symbol, exchange);
+        CREATE INDEX IF NOT EXISTS ex_symbol_time_1d on prices_1d (exchange, symbol, timestamp);
         '''
 
         with self._connect() as conn:
@@ -77,17 +71,29 @@ class Database:
         data['exchange'] = Settings.EXCHANGE
         data.reset_index(inplace=True)
         data.rename(columns={'index': 'timestamp'}, inplace=True)
-        data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
-                     'usd_ema_12', 'usd_ema_144', 'usd_ema_169', 'usd_ema_576', 'usd_ema_676',
-                     'btc_ema_12', 'btc_ema_144', 'btc_ema_169', 'btc_ema_576', 'btc_ema_676', 'count']]
 
-        data = data.to_csv('out.csv', header=False, index=False)
+        # 处理空值
+        numeric_columns = ['open', 'high', 'low', 'close', 'vbtc',
+                        'usd_ema_20', 'usd_ema_200',
+                        'btc_ema_20', 'btc_ema_200', 'count']
+        
+        # 将空字符串和NaN替换为0或NULL
+        for col in numeric_columns:
+            data[col] = data[col].replace('', None)
+            data[col] = pd.to_numeric(data[col], errors='coerce')  # 将无效数值转换为NaN
+
+        data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
+                     'usd_ema_20', 'usd_ema_200',
+                     'btc_ema_20', 'btc_ema_200', 'count']]
+
+        # 使用NA表示来写入CSV，这样PostgreSQL会将其识别为NULL
+        data.to_csv('out.csv', header=False, index=False, na_rep='\\N')
 
         with self._connect() as conn:
             with conn.cursor() as cur:
                 try:
                     with open('out.csv', 'r') as f:
-                        cur.copy_from(f, "prices_8h", sep=',')
+                        cur.copy_from(f, "prices_1d", sep=',', null='\\N')
                     conn.commit()
                     Logger.get_logger().info("Write to Database.")
                 except psycopg2.DatabaseError as e:
@@ -101,17 +107,11 @@ class Database:
         query = f'''
         SELECT 
         timestamp,
-        usd_ema_12,
-        usd_ema_144,
-        usd_ema_169,
-        usd_ema_576,
-        usd_ema_676,
-        btc_ema_12,
-        btc_ema_144,
-        btc_ema_169,
-        btc_ema_576,
-        btc_ema_676,
-        count FROM prices_8h 
+        usd_ema_20,
+        usd_ema_200,
+        btc_ema_20,
+        btc_ema_200,
+        count FROM prices_1d 
         WHERE SYMBOL = \'{symbol}\' AND EXCHANGE = \'{Settings.EXCHANGE}\' ORDER BY timestamp DESC LIMIT {num};
         '''
 
@@ -165,7 +165,7 @@ class Database:
         cur = conn.cursor()
 
         for index, row in data.iterrows():
-            if np.isnan(row['latest_timestamp']):
+            if pd.isnull(row['latest_timestamp']):
                 continue
             try:
                 cur.execute(insert_query, tuple(row))
