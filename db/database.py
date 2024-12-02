@@ -44,7 +44,8 @@ class Database:
         usd_ema_200           NUMERIC,
         btc_ema_20            NUMERIC,
         btc_ema_200           NUMERIC,
-        count                 INT                             NOT NULL
+        count                 INT                             NOT NULL,
+        volume                NUMERIC                         NOT NULL
     );
         CREATE INDEX IF NOT EXISTS symbol_time_1d ON prices_1d (timestamp, symbol, exchange);
         CREATE INDEX IF NOT EXISTS ex_symbol_time_1d on prices_1d (exchange, symbol, timestamp);
@@ -84,7 +85,7 @@ class Database:
 
         data = data[['symbol', 'exchange', 'timestamp', 'open', 'high', 'low', 'close', 'vbtc',
                      'usd_ema_20', 'usd_ema_200',
-                     'btc_ema_20', 'btc_ema_200', 'count']]
+                     'btc_ema_20', 'btc_ema_200', 'count', 'volume']]
 
         # 使用NA表示来写入CSV，这样PostgreSQL会将其识别为NULL
         data.to_csv('out.csv', header=False, index=False, na_rep='\\N')

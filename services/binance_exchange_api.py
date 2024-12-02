@@ -2,8 +2,8 @@ from typing import Optional, Dict
 from services.base_exchange_api import BaseExchangeAPI
 from config.settings import Settings
 from pandas import DataFrame
-from utils.timestamp import get_current_hour_timestamp_ms
-from utils.transform import binance_list2df_kline, pair2token, binance_list2symbol_fullname
+from utils.timestamp import get_current_day_timestamp_ms
+from utils.transform import binance_list2df_kline, binance_list2symbol_fullname
 import time
 from utils.logger import Logger
 from requests.exceptions import HTTPError
@@ -24,7 +24,7 @@ class BinanceExchangeAPI(BaseExchangeAPI):
 
     # Binance uses second as timestamp
     def get_local_time(self):
-        return get_current_hour_timestamp_ms()
+        return get_current_day_timestamp_ms()
 
     def get_token_full_name(self):
         response = self.session.get('https://api.binance.com/api/v3/exchangeInfo?showPermissionSets=false')
@@ -53,17 +53,17 @@ class BinanceExchangeAPI(BaseExchangeAPI):
     def init_history_price(self, symbol: str, max_entries: int = 2000,  limit: int = Settings.API_LIMIT,
                            interval: str = Settings.DEFAULT_INTERVAL) -> Optional[DataFrame]:
         candle_sticks = []
-        # [from, to]所以不用＋interval
-        end = get_current_hour_timestamp_ms()+INTERVAL_MS_MAP[interval]
+        # 当前的日线还没走完
+        end = get_current_day_timestamp_ms()-INTERVAL_MS_MAP[interval]
 
         while True:
-            start = end - limit * INTERVAL_MS_MAP[interval]
+            start = end - (limit-1) * INTERVAL_MS_MAP[interval]
             try:
                 # (start, end] = [start+interval, end]
-                tmp = self.get_candle_sticks(symbol, start=start + INTERVAL_MS_MAP[interval], end=end)
+                tmp = self.get_candle_sticks(symbol, start=start, end=end)
                 n_entries = len(tmp)
                 candle_sticks += tmp
-                end = start
+                end = start-INTERVAL_MS_MAP[interval]
                 if n_entries < limit:
                     break
                 if len(candle_sticks) >= max_entries:
@@ -88,16 +88,16 @@ class BinanceExchangeAPI(BaseExchangeAPI):
             return None
 
         candle_sticks = []
-        # 加一个小的偏移量是为了避免获得重复数据。(last_time, end_time] => [last_time+interval, end_time+interval)
-        end = end_time+INTERVAL_MS_MAP[interval]
-        start = last_time+INTERVAL_MS_MAP[interval]
+        # 当前时间的日线还没走完
+        end = end_time-INTERVAL_MS_MAP[interval]
+        start = last_time+INTERVAL_MS_MAP[interval] # last record end time
 
-        while start < end:
+        while start <= end:
             tmp_end = min(start+limit*INTERVAL_MS_MAP[interval], end)
             try:
                 tmp = self.get_candle_sticks(symbol, start=start, end=tmp_end)
                 candle_sticks += tmp
-                start = tmp_end
+                start = tmp_end+INTERVAL_MS_MAP[interval]
 
                 time.sleep(0.05)
             except HTTPError as http_err:
